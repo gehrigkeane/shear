@@ -5,7 +5,9 @@
  */
 package dev.gswizz.shear.ui
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -51,6 +53,8 @@ class HistoryScreenTest {
         compose.onNodeWithText("dest.example").assertIsDisplayed()
         compose.onNodeWithText("Messages").assertIsDisplayed()
         compose.onNodeWithText("Cleaned").assertIsDisplayed()
+        // Only the settings action and the row itself are tappable; the status is a label, not a button.
+        compose.onAllNodes(hasClickAction()).assertCountEquals(2)
         compose.onNodeWithText("dest.example").performClick()
         assertEquals("e1", opened)
     }

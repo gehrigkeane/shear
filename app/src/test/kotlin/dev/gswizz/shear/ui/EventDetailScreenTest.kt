@@ -5,6 +5,7 @@
  */
 package dev.gswizz.shear.ui
 
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -51,6 +52,7 @@ class EventDetailScreenTest {
         compose.onNodeWithText("see https://go.example/r?u=x").assertIsDisplayed()
         compose.onNodeWithText("see https://dest.example/a?id=1").assertIsDisplayed()
         compose.onNodeWithText("Sent to Messages").assertIsDisplayed()
+        compose.onNodeWithText("Cleaned").assertIsDisplayed().assertHasNoClickAction()
         // Robolectric's default viewport is short; the trace card is composed but scrolled out of view.
         compose.onNodeWithText("clean-urls rule #44").assertExists()
         compose.onNodeWithText("utm_source=x").assertExists()
