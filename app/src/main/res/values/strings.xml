@@ -58,6 +58,7 @@
     <string name="moment_confetti_desc">Pixel confetti in Shear\'s colors</string>
     <string name="moment_typewriter">Typewriter</string>
     <string name="moment_typewriter_desc">The wordmark types itself in</string>
+    <string name="moment_preview">Preview</string>
     <string name="settings_history">History</string>
     <string name="settings_retention_off">Don\'t keep history</string>
     <string name="settings_retention_30">Keep for 30 days</string>

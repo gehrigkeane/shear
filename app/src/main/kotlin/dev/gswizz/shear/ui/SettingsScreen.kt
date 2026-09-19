@@ -43,6 +43,7 @@ import dev.gswizz.shear.core.net.ResolveMode
 import dev.gswizz.shear.data.HistoryRetention
 import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
+import dev.gswizz.shear.ui.moment.MomentPreviewDialog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +64,8 @@ data class SettingsUiState(
     val rulesUpstream: String = UPSTREAM,
     val appVersion: String = "",
     val confirmation: Confirmation? = null,
+    /** The share moment being previewed full screen, if any. */
+    val preview: MomentStyle? = null,
 ) {
     companion object {
         const val UPSTREAM = "https://github.com/brave/adblock-lists"
@@ -79,19 +82,23 @@ data class SettingsCallbacks(
     val onOpenUpstream: () -> Unit,
     val onPinDemo: () -> Unit,
     val onMoment: (MomentStyle) -> Unit,
+    val onPreview: () -> Unit,
+    val onDismissPreview: () -> Unit,
 )
 
 class SettingsViewModel(private val graph: AppGraph, appVersion: String) : ViewModel() {
     private val confirmation = MutableStateFlow<Confirmation?>(null)
+    private val preview = MutableStateFlow<MomentStyle?>(null)
     private val rulesVersion = flow { emit(graph.engine().rulesVersion) }
 
     val state: StateFlow<SettingsUiState> =
-        combine(graph.settings.settings, confirmation, rulesVersion) { settings, pending, version ->
+        combine(graph.settings.settings, confirmation, rulesVersion, preview) { settings, pending, version, shown ->
                 SettingsUiState(
                     settings = settings,
                     rulesVersion = version,
                     appVersion = appVersion,
                     confirmation = pending,
+                    preview = shown,
                 )
             }
             .stateIn(
@@ -116,6 +123,15 @@ class SettingsViewModel(private val graph: AppGraph, appVersion: String) : ViewM
 
     fun setMoment(style: MomentStyle) {
         viewModelScope.launch { graph.settings.setMoment(style) }
+    }
+
+    /** Plays the currently chosen moment full screen. */
+    fun requestPreview() {
+        preview.value = state.value.settings.moment
+    }
+
+    fun dismissPreview() {
+        preview.value = null
     }
 
     fun requestClearHistory() {
@@ -169,6 +185,8 @@ fun SettingsRoute(
                 onOpenUpstream = onOpenUpstream,
                 onPinDemo = onPinDemo,
                 onMoment = viewModel::setMoment,
+                onPreview = viewModel::requestPreview,
+                onDismissPreview = viewModel::dismissPreview,
             ),
         onBack = onBack,
         modifier = modifier,
@@ -237,6 +255,9 @@ fun SettingsScreen(
                     onSelect = { callbacks.onMoment(style) },
                 )
             }
+            TextButton(onClick = callbacks.onPreview, modifier = Modifier.padding(horizontal = 8.dp)) {
+                Text(text = stringResource(R.string.moment_preview))
+            }
             SectionTitle(text = stringResource(R.string.settings_history))
             RadioRow(
                 title = stringResource(R.string.settings_retention_off),
@@ -293,6 +314,7 @@ fun SettingsScreen(
     state.confirmation?.let { pending ->
         ConfirmationDialog(pending = pending, onConfirm = callbacks.onConfirm, onDismiss = callbacks.onDismiss)
     }
+    state.preview?.let { style -> MomentPreviewDialog(style = style, onDismiss = callbacks.onDismissPreview) }
 }
 
 /** Title and one-line description resources for a [MomentStyle] radio row. */
