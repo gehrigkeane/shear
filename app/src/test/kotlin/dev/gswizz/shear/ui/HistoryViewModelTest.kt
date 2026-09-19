@@ -24,6 +24,20 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HistoryViewModelTest {
     @Test
+    fun `the pin prompt shows until dismissed`() = runBlocking {
+        val installed = TestGraph.install(FakeEngine.noUrls())
+        val viewModel = HistoryViewModel(installed.graph)
+        viewModel.state.test {
+            val loaded = awaitItem().let { if (it.loading) awaitItem() else it }
+            assertTrue(loaded.showPinPrompt)
+            viewModel.dismissPinPrompt()
+            assertFalse(awaitItem().showPinPrompt)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertTrue(installed.settings.state.value.pinPromptSeen)
+    }
+
+    @Test
     fun `groups events by day newest first with host summaries and destinations`() = runBlocking {
         val installed = TestGraph.install(FakeEngine.noUrls())
         val day = 24L * 60 * 60 * 1000

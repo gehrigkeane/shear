@@ -76,6 +76,7 @@ data class SettingsCallbacks(
     val onConfirm: () -> Unit,
     val onDismiss: () -> Unit,
     val onOpenUpstream: () -> Unit,
+    val onPinDemo: () -> Unit,
 )
 
 class SettingsViewModel(private val graph: AppGraph, appVersion: String) : ViewModel() {
@@ -144,6 +145,7 @@ fun SettingsRoute(
     appVersion: String,
     onBack: () -> Unit,
     onOpenUpstream: () -> Unit,
+    onPinDemo: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = viewModel { SettingsViewModel(graph, appVersion) },
 ) {
@@ -159,6 +161,7 @@ fun SettingsRoute(
                 onConfirm = viewModel::confirm,
                 onDismiss = viewModel::dismiss,
                 onOpenUpstream = onOpenUpstream,
+                onPinDemo = onPinDemo,
             ),
         onBack = onBack,
         modifier = modifier,
@@ -246,6 +249,12 @@ fun SettingsScreen(
             TextButton(onClick = callbacks.onClearHistory, modifier = Modifier.padding(horizontal = 8.dp)) {
                 Text(text = stringResource(R.string.settings_clear_history))
             }
+            SectionTitle(text = stringResource(R.string.settings_share_sheet))
+            ListItem(
+                headlineContent = { Text(text = stringResource(R.string.settings_pin)) },
+                supportingContent = { Text(text = stringResource(R.string.settings_pin_desc)) },
+                modifier = Modifier.clickable(onClick = callbacks.onPinDemo),
+            )
             SectionTitle(text = stringResource(R.string.settings_about))
             ListItem(
                 headlineContent = { Text(text = stringResource(R.string.settings_rules)) },

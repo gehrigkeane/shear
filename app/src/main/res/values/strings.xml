@@ -10,6 +10,10 @@
     <string name="history_retention_off">History is off. Shares are cleaned but not recorded.</string>
     <string name="rules_banner">Shear\'s rules failed to load. Text is being shared unchanged.</string>
     <string name="no_links">No links</string>
+    <string name="pin_card_title">Pin Shear to the top of the share sheet</string>
+    <string name="pin_card_body">Android orders share targets by use. Long-press Shear in any share sheet and choose Pin to keep it first.</string>
+    <string name="pin_show_me">Show me</string>
+    <string name="dismiss">Dismiss</string>
     <string name="destination_unknown">Destination not reported</string>
     <string name="status_cleaned">Cleaned</string>
     <string name="status_unchanged">Already clean</string>
@@ -47,6 +51,9 @@
     <string name="settings_retain_originals">Keep original links</string>
     <string name="settings_retain_originals_desc">Off stores only a fingerprint of what you shared and the cleaned result</string>
     <string name="settings_clear_history">Clear history</string>
+    <string name="settings_share_sheet">Share sheet</string>
+    <string name="settings_pin">Pin Shear in the share sheet</string>
+    <string name="settings_pin_desc">Opens a share sheet so you can long-press Shear and choose Pin</string>
     <string name="settings_about">About</string>
     <string name="settings_rules">Brave rules snapshot</string>
     <string name="settings_rules_upstream">github.com/brave/adblock-lists</string>

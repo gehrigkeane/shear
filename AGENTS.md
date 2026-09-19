@@ -43,7 +43,7 @@ shear/
 | `ShearApplication`        | Owns the hand-wired `AppGraph`; loads the engine off the main thread                          |
 | `ShareReceiverActivity`   | Accept `ACTION_SEND`, clean, optionally resolve with progress, record, launch chooser, finish |
 | `ChosenComponentReceiver` | Attach the Sharesheet's chosen app to the history event                                       |
-| `MainActivity`            | Navigation 3 shell over History, event detail, and Settings; prunes history on open           |
+| `MainActivity`            | Navigation 3 shell over History, event detail, and Settings; prunes history on open; opens the pin-demo sharesheet |
 | `data.HistoryRepository`  | Room-backed history with retention and redaction on one ordered worker                        |
 | `data.SettingsRepository` | DataStore Preferences: redirect mode, retention, retain originals                              |
 | `ui.*Screen`              | One file per screen: ViewModel, `*Route` (collects state), stateless `*Screen`                 |
@@ -70,7 +70,9 @@ shear/
   reads no bodies, and refuses non-public addresses at DNS time.
   Smart mode fetches only hosts in `core/src/main/resources/shear/opaque-redirectors.txt`.
 - **Native Sharesheet only.**
-  Shear never renders or ranks destinations; it excludes itself from the chooser.
+  Shear never renders or ranks destinations; the relay excludes Shear from its chooser.
+  The one exception is `PinDemo`, a sharesheet opened from Settings or the first-run card that keeps Shear listed
+  so the user can long-press it and choose Pin, the only promotion Android allows.
 - **Persistence never blocks the share.**
   History writes run on a single ordered worker;
   the event id is allocated before any I/O so the chooser callback can attach after process death.

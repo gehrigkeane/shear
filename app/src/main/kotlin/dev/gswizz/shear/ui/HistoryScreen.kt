@@ -8,8 +8,10 @@ package dev.gswizz.shear.ui
 import android.content.ComponentName
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -29,6 +31,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,6 +62,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class DestinationUi(val label: String, val component: String, val icon: ImageBitmap?)
 
@@ -78,11 +82,13 @@ data class HistoryUiState(
     val sections: List<DaySection> = emptyList(),
     val rulesUnavailable: Boolean = false,
     val retentionOff: Boolean = false,
+    /** The one-time hint about pinning Shear in the sharesheet. */
+    val showPinPrompt: Boolean = false,
     val loading: Boolean = true,
 )
 
 /** History grouped by day, newest first, with the engine's health and the retention setting alongside. */
-class HistoryViewModel(graph: AppGraph) : ViewModel() {
+class HistoryViewModel(private val graph: AppGraph) : ViewModel() {
     private val health = flow { emit(!graph.engine().rulesHealthy) }
 
     val state: StateFlow<HistoryUiState> =
@@ -91,11 +97,16 @@ class HistoryViewModel(graph: AppGraph) : ViewModel() {
                     sections = sections(events, graph.destinations),
                     rulesUnavailable = unhealthy,
                     retentionOff = settings.retention == HistoryRetention.OFF,
+                    showPinPrompt = !settings.pinPromptSeen,
                     loading = false,
                 )
             }
             .flowOn(graph.defaultDispatcher)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HistoryUiState())
+
+    fun dismissPinPrompt() {
+        viewModelScope.launch { graph.settings.setPinPromptSeen() }
+    }
 
     private fun sections(events: List<ShareEventEntity>, destinations: DestinationResolver): List<DaySection> =
         events
@@ -130,12 +141,24 @@ fun HistoryRoute(
     graph: AppGraph,
     onOpen: (String) -> Unit,
     onSettings: () -> Unit,
+    onPinDemo: () -> Unit,
     modifier: Modifier = Modifier,
     shared: SharedScopes? = null,
     viewModel: HistoryViewModel = viewModel { HistoryViewModel(graph) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HistoryScreen(state = state, onOpen = onOpen, onSettings = onSettings, modifier = modifier, shared = shared)
+    HistoryScreen(
+        state = state,
+        onOpen = onOpen,
+        onSettings = onSettings,
+        modifier = modifier,
+        shared = shared,
+        onPinDemo = {
+            onPinDemo()
+            viewModel.dismissPinPrompt()
+        },
+        onDismissPin = viewModel::dismissPinPrompt,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,6 +169,8 @@ fun HistoryScreen(
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
     shared: SharedScopes? = null,
+    onPinDemo: () -> Unit = {},
+    onDismissPin: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -166,6 +191,7 @@ fun HistoryScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (state.rulesUnavailable) Banner(text = stringResource(R.string.rules_banner), error = true)
             if (state.retentionOff) Banner(text = stringResource(R.string.history_retention_off), error = false)
+            if (state.showPinPrompt) PinCard(onShow = onPinDemo, onDismiss = onDismissPin)
             when {
                 state.loading -> Unit
                 state.sections.isEmpty() -> EmptyState(modifier = Modifier.fillMaxSize())
@@ -192,6 +218,28 @@ private fun Banner(text: String, error: Boolean, modifier: Modifier = Modifier) 
         colors = CardDefaults.cardColors(containerColor = container),
     ) {
         Text(text = text, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** The one-time nudge toward pinning: what pinning does, then a demo sharesheet to do it in, or dismissal. */
+@Composable
+private fun PinCard(onShow: () -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+    ) {
+        Column(modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 8.dp)) {
+            Text(text = stringResource(R.string.pin_card_title), style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = stringResource(R.string.pin_card_body),
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text(text = stringResource(R.string.dismiss)) }
+                TextButton(onClick = onShow) { Text(text = stringResource(R.string.pin_show_me)) }
+            }
+        }
     }
 }
 
