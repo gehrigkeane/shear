@@ -1,20 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder mark: a link being cut. Two chain links with a shear line through the join. -->
+<!-- The wordmark's S, cell for cell: solid blocks carry a rosewater-to-pink gradient, box-drawing shadow sits in surface gray. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#F5E0DC"
-        android:strokeWidth="6"
-        android:strokeLineCap="round"
-        android:pathData="M40,54 L32,54 A10,10 0 0 1 32,34 L44,34 A10,10 0 0 1 54,44 M68,54 L76,54 A10,10 0 0 1 76,74 L64,74 A10,10 0 0 1 54,64" />
+        android:fillColor="#585B70"
+        android:pathData="
+        M73.5,36.77h4.22v1.95h-4.22zM75.78,36.77h1.95v4.22h-1.95zM43.27,43.27h4.22v1.95h-4.22z
+        M43.27,43.27h1.95v4.22h-1.95zM47.5,43.27h4.23v1.95h-4.23zM49.77,43.27h4.22v1.95h-4.22z
+        M54,43.27h4.23v1.95h-4.23zM56.27,43.27h4.22v1.95h-4.22zM60.5,43.27h4.22v1.95h-4.22z
+        M62.77,43.27h4.22v1.95h-4.22zM67,43.27h4.22v1.95h-4.22zM69.28,43.27h4.22v1.95h-4.22z
+        M73.5,43.27h4.22v1.95h-4.22zM75.78,41h1.95v4.23h-1.95zM73.5,49.77h4.22v1.95h-4.22z
+        M75.78,49.77h1.95v4.22h-1.95zM30.27,56.27h4.22v1.95h-4.22zM30.27,54h1.95v4.23h-1.95z
+        M34.5,56.27h4.23v1.95h-4.23zM36.77,56.27h4.22v1.95h-4.22zM41,56.27h4.23v1.95h-4.23z
+        M43.27,56.27h4.22v1.95h-4.22zM47.5,56.27h4.23v1.95h-4.23zM49.77,56.27h4.22v1.95h-4.22z
+        M54,56.27h4.23v1.95h-4.23zM56.27,56.27h4.22v1.95h-4.22zM75.78,54h1.95v4.23h-1.95z
+        M75.78,56.27h1.95v4.22h-1.95zM75.78,60.5h1.95v4.22h-1.95zM75.78,62.77h1.95v4.22h-1.95z
+        M30.27,69.28h4.22v1.95h-4.22zM30.27,67h1.95v4.22h-1.95zM34.5,69.28h4.23v1.95h-4.23z
+        M36.77,69.28h4.22v1.95h-4.22zM41,69.28h4.23v1.95h-4.23zM43.27,69.28h4.22v1.95h-4.22z
+        M47.5,69.28h4.23v1.95h-4.23zM49.77,69.28h4.22v1.95h-4.22zM54,69.28h4.23v1.95h-4.23z
+        M56.27,69.28h4.22v1.95h-4.22zM60.5,69.28h4.22v1.95h-4.22zM62.77,69.28h4.22v1.95h-4.22z
+        M67,69.28h4.22v1.95h-4.22zM69.28,69.28h4.22v1.95h-4.22zM73.5,69.28h4.22v1.95h-4.22z
+        M75.78,67h1.95v4.22h-1.95z" />
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#F38BA8"
-        android:strokeWidth="6"
-        android:strokeLineCap="round"
-        android:pathData="M42,66 L66,42" />
+        android:pathData="
+        M28,34.5h6.5v6.5h-6.5zM34.5,34.5h6.5v6.5h-6.5zM41,34.5h6.5v6.5h-6.5zM47.5,34.5h6.5v6.5h-6.5z
+        M54,34.5h6.5v6.5h-6.5zM60.5,34.5h6.5v6.5h-6.5zM67,34.5h6.5v6.5h-6.5zM28,41h6.5v6.5h-6.5z
+        M34.5,41h6.5v6.5h-6.5zM28,47.5h6.5v6.5h-6.5zM34.5,47.5h6.5v6.5h-6.5zM41,47.5h6.5v6.5h-6.5z
+        M47.5,47.5h6.5v6.5h-6.5zM54,47.5h6.5v6.5h-6.5zM60.5,47.5h6.5v6.5h-6.5zM67,47.5h6.5v6.5h-6.5z
+        M60.5,54h6.5v6.5h-6.5zM67,54h6.5v6.5h-6.5zM28,60.5h6.5v6.5h-6.5zM34.5,60.5h6.5v6.5h-6.5z
+        M41,60.5h6.5v6.5h-6.5zM47.5,60.5h6.5v6.5h-6.5zM54,60.5h6.5v6.5h-6.5zM60.5,60.5h6.5v6.5h-6.5z
+        M67,60.5h6.5v6.5h-6.5z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="28"
+                android:startY="34.5"
+                android:endX="80"
+                android:endY="73.5">
+                <item android:offset="0" android:color="#F5E0DC" />
+                <item android:offset="1" android:color="#F38BA8" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>
