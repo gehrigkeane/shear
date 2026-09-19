@@ -7,6 +7,7 @@ package dev.gswizz.shear
 
 import android.content.Intent
 import dev.gswizz.shear.core.net.ResolveMode
+import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
 import dev.gswizz.shear.data.ShareStatus
 import kotlinx.coroutines.CompletableDeferred
@@ -38,7 +39,7 @@ class ShareReceiverResolutionTest {
     private val short = "https://bit.ly/abc"
     private val resolved = "https://long.example/article"
     private val dispatcher = UnconfinedTestDispatcher()
-    private val smart = Settings(redirectMode = ResolveMode.SMART)
+    private val smart = Settings(redirectMode = ResolveMode.SMART, moment = MomentStyle.OFF)
 
     @Before
     fun main() {
@@ -83,7 +84,7 @@ class ShareReceiverResolutionTest {
     @Test
     fun `off mode never calls process even when the engine would need the network`() {
         val engine = FakeEngine.resolving(short, resolved)
-        TestGraph.install(engine, Settings(redirectMode = ResolveMode.OFF))
+        TestGraph.install(engine, Settings(redirectMode = ResolveMode.OFF, moment = MomentStyle.OFF))
         val activity = launch().get()
         assertEquals("see $short", sharedText(activity))
         assertTrue(engine.processed.isEmpty())
