@@ -92,6 +92,10 @@ class SettingsViewModelTest {
             awaitUntil { !it.settings.retainOriginals }
             viewModel.setMoment(MomentStyle.TYPEWRITER)
             awaitUntil { it.settings.moment == MomentStyle.TYPEWRITER }
+            viewModel.requestPreview()
+            awaitUntil { it.preview == MomentStyle.TYPEWRITER }
+            viewModel.dismissPreview()
+            awaitUntil { it.preview == null }
             viewModel.requestClearHistory()
             awaitUntil { it.confirmation == Confirmation.CLEAR_HISTORY }
             viewModel.confirm()

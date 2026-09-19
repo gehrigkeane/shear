@@ -25,7 +25,7 @@ import org.robolectric.annotation.GraphicsMode
 class SettingsScreenTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {}, {})
+    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 
     private val disclosure =
         "Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer."
@@ -62,6 +62,25 @@ class SettingsScreenTest {
         }
         compose.onNodeWithText("Confetti").performScrollTo().performClick()
         assertEquals(MomentStyle.CONFETTI, chosen)
+    }
+
+    @Test
+    fun `the preview button asks for a preview`() {
+        var previews = 0
+        compose.setContent {
+            SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onPreview = { previews++ }), onBack = {})
+        }
+        compose.onNodeWithText("Preview").performScrollTo().performClick()
+        assertEquals(1, previews)
+    }
+
+    @Test
+    fun `a pending preview plays the moment over a sample link`() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            SettingsScreen(state = SettingsUiState(preview = MomentStyle.CUT), callbacks = noop(), onBack = {})
+        }
+        compose.onNodeWithText("Removed utm_source, fbclid").assertExists()
     }
 
     @Test
