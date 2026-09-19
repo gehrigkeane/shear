@@ -30,14 +30,26 @@ object Motion {
     /** The wordmark's diagonal reveal. */
     const val REVEAL_MS = 500
 
-    /** The Cut share moment, blade to settled URL. */
-    const val CUT_MS = 850
+    /** The Cut share moment, first frame to handoff: hold, sweep, slide, settle. */
+    const val CUT_MS = 1_800
 
-    /** The Confetti share moment, pop to last falling square. */
-    const val CONFETTI_MS = 800
+    /** The Cut: how long the URL sits still so the eye can land before the blade moves. */
+    const val CUT_HOLD_MS = 250
 
-    /** The Typewriter share moment, first column to last caption character. */
-    const val TYPEWRITER_MS = 700
+    /** The Cut: the blade's crossing. */
+    const val CUT_SWEEP_MS = 800
+
+    /** The Cut: survivors closing ranks while crumbs fall. */
+    const val CUT_SLIDE_MS = 350
+
+    /** The Cut: the clean URL at rest before the sharesheet. */
+    const val CUT_SETTLE_MS = 400
+
+    /** The Confetti share moment, pop to last faded square. */
+    const val CONFETTI_MS = 1_500
+
+    /** The Typewriter share moment, first column to the end of the hold after the caption. */
+    const val TYPEWRITER_MS = 1_600
 
     val Easing: Easing = FastOutSlowInEasing
 }

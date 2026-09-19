@@ -8,16 +8,25 @@ package dev.gswizz.shear.ui.moment
 /**
  * The timeline of The Cut over one measured line of [segments], in pixels and milliseconds, with no drawing.
  *
- * A blade crosses the line left to right in [sweepMs]. A removed run crumbles from its left edge as the blade passes
- * over it, and once the blade clears its right edge every run after it slides left by that run's width over [slideMs],
- * so the survivors close ranks into the final URL. Everything is a pure function of time so a frame can be evaluated
- * anywhere, including in tests.
+ * The line sits still for [holdMs], then a blade crosses it left to right in [sweepMs]. A removed run crumbles from its
+ * left edge as the blade passes over it, and once the blade clears its right edge every run after it slides left by
+ * that run's width over [slideMs], so the survivors close ranks into the final URL. Everything is a pure function of
+ * time so a frame can be evaluated anywhere, including in tests.
  */
-class CutScene(val segments: List<Segment>, val widths: List<Float>, val sweepMs: Int, val slideMs: Int) {
+class CutScene(
+    val segments: List<Segment>,
+    val widths: List<Float>,
+    val sweepMs: Int,
+    val slideMs: Int,
+    val holdMs: Int = 0,
+) {
     private val lefts: List<Float> = widths.runningFold(0f) { acc, w -> acc + w }
     val totalWidth: Float = lefts.last()
 
-    fun bladeX(tMs: Float): Float = (tMs / sweepMs).coerceIn(0f, 1f) * totalWidth
+    /** When the blade has finished crossing. */
+    val sweepEndMs: Int = holdMs + sweepMs
+
+    fun bladeX(tMs: Float): Float = ((tMs - holdMs) / sweepMs).coerceIn(0f, 1f) * totalWidth
 
     /** How much of removed run [i], from its left edge, has crumbled by [tMs]; always 0 for a kept run. */
     fun cutFraction(i: Int, tMs: Float): Float {
@@ -28,7 +37,7 @@ class CutScene(val segments: List<Segment>, val widths: List<Float>, val sweepMs
     /** Progress of the leftward slide that removed run [i] causes in the runs after it; 0 for a kept run. */
     fun slide(i: Int, tMs: Float): Float {
         if (!segments[i].removed) return 0f
-        val exitMs = if (totalWidth == 0f) 0f else sweepMs * (lefts[i] + widths[i]) / totalWidth
+        val exitMs = holdMs + if (totalWidth == 0f) 0f else sweepMs * (lefts[i] + widths[i]) / totalWidth
         return ((tMs - exitMs) / slideMs).coerceIn(0f, 1f)
     }
 
@@ -39,5 +48,5 @@ class CutScene(val segments: List<Segment>, val widths: List<Float>, val sweepMs
         return lefts[i] - shift
     }
 
-    fun finished(tMs: Float): Boolean = tMs >= sweepMs + slideMs
+    fun finished(tMs: Float): Boolean = tMs >= sweepEndMs + slideMs
 }

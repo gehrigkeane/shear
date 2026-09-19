@@ -21,9 +21,11 @@ class TypewriterScene(private val columns: Int, private val captionLength: Int) 
     /** Whether the cursor is lit in this blink phase. */
     fun cursorOn(tMs: Float): Boolean = (tMs / BLINK_MS).toInt() % 2 == 0
 
-    /** Characters of the caption shown at [tMs]; none until the wordmark is complete. */
+    /**
+     * Characters of the caption shown at [tMs]; none until the wordmark is complete, all once [CAPTION_MS] has passed.
+     */
     fun captionChars(tMs: Float): Int {
-        val progress = ((tMs - TYPE_MS) / (DURATION_MS - TYPE_MS)).coerceIn(0f, 1f)
+        val progress = ((tMs - TYPE_MS) / CAPTION_MS).coerceIn(0f, 1f)
         return (progress * captionLength).toInt()
     }
 
@@ -31,7 +33,8 @@ class TypewriterScene(private val columns: Int, private val captionLength: Int) 
 
     companion object {
         const val DURATION_MS = Motion.TYPEWRITER_MS
-        const val TYPE_MS = 450
+        const val TYPE_MS = 800
+        const val CAPTION_MS = 500
         const val BLINK_MS = 120
     }
 }
