@@ -172,15 +172,21 @@ fun EventDetailRoute(
     eventId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
     viewModel: EventDetailViewModel = viewModel(key = eventId) { EventDetailViewModel(graph, eventId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    EventDetailScreen(state = state, onBack = onBack, modifier = modifier)
+    EventDetailScreen(state = state, onBack = onBack, modifier = modifier, shared = shared)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun EventDetailScreen(
+    state: EventDetailUiState,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
+) {
     val event = (state as? EventDetailUiState.Loaded)?.event
     Scaffold(
         modifier = modifier,
@@ -196,7 +202,7 @@ fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: M
             if (event == null) {
                 TopAppBar(title = { Text(text = stringResource(R.string.detail_title)) }, navigationIcon = back)
             } else {
-                EventHeader(event = event, navigationIcon = back)
+                EventHeader(event = event, navigationIcon = back, shared = shared)
             }
         },
     ) { padding ->
@@ -219,7 +225,12 @@ fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: M
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EventHeader(event: EventDetail, navigationIcon: @Composable () -> Unit, modifier: Modifier = Modifier) {
+private fun EventHeader(
+    event: EventDetail,
+    navigationIcon: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
+) {
     val time =
         event.timestamp
             .atZone(ZoneId.systemDefault())
@@ -230,6 +241,7 @@ private fun EventHeader(event: EventDetail, navigationIcon: @Composable () -> Un
             Column {
                 Text(
                     text = event.summary.ifEmpty { stringResource(R.string.no_links) },
+                    modifier = Modifier.sharedBoundsIn(shared, "summary/${event.id}"),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium,
@@ -248,7 +260,11 @@ private fun EventHeader(event: EventDetail, navigationIcon: @Composable () -> Un
         actions = {
             val icon = event.destination?.icon
             if (icon != null) {
-                Image(bitmap = icon, contentDescription = null, modifier = Modifier.padding(end = 16.dp).size(32.dp))
+                Image(
+                    bitmap = icon,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 16.dp).sharedElementIn(shared, "icon/${event.id}").size(32.dp),
+                )
             }
         },
     )
