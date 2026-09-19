@@ -48,18 +48,21 @@ fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Uni
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.m),
             ) {
+                val caption = caption(summary)
                 when (style) {
+                    MomentStyle.CUT -> CutMoment(summary = summary, onFinished = onFinished)
                     MomentStyle.CONFETTI -> ConfettiMoment(summary = summary, onFinished = onFinished)
-                    // Typewriter arrives in its own change; until then it plays The Cut.
-                    MomentStyle.CUT,
-                    MomentStyle.TYPEWRITER -> CutMoment(summary = summary, onFinished = onFinished)
+                    // Types the caption itself, so the plain one below would double it.
+                    MomentStyle.TYPEWRITER -> TypewriterMoment(caption = caption, onFinished = onFinished)
                     MomentStyle.OFF -> onFinished()
                 }
-                Text(
-                    text = caption(summary),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (style != MomentStyle.TYPEWRITER) {
+                    Text(
+                        text = caption,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
