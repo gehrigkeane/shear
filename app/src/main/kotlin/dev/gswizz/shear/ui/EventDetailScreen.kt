@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -210,7 +209,7 @@ private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(text = time, style = MaterialTheme.typography.labelLarge)
-                AssistChip(onClick = {}, label = { Text(text = statusLabel(event.status)) })
+                StatusBadge(status = event.status)
                 Text(
                     text =
                         event.destination?.let { stringResource(R.string.detail_destination, it.label) }

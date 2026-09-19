@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -235,22 +234,9 @@ private fun HistoryRowItem(row: HistoryRow, onClick: () -> Unit, modifier: Modif
         trailingContent = {
             Column(horizontalAlignment = Alignment.End) {
                 Text(text = time, style = MaterialTheme.typography.labelMedium)
-                AssistChip(onClick = onClick, label = { Text(text = statusLabel(row.status)) })
+                StatusBadge(status = row.status)
             }
         },
         modifier = modifier.clickable(onClickLabel = stringResource(R.string.open_event), onClick = onClick),
     )
 }
-
-@Composable
-fun statusLabel(status: ShareStatus): String =
-    stringResource(
-        when (status) {
-            ShareStatus.CLEANED -> R.string.status_cleaned
-            ShareStatus.UNCHANGED -> R.string.status_unchanged
-            ShareStatus.NO_URLS -> R.string.status_no_urls
-            ShareStatus.RULES_UNAVAILABLE -> R.string.status_rules_unavailable
-            ShareStatus.RESOLUTION_INCOMPLETE -> R.string.status_resolution_incomplete
-            ShareStatus.CANCELLED -> R.string.status_cancelled
-        }
-    )
