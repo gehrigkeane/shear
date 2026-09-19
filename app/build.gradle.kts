@@ -53,6 +53,8 @@ android {
         abortOnError = true
         // Dependabot owns version currency; lint nagging about newer artifacts would block unrelated changes.
         disable += setOf("GradleDependency", "AndroidGradlePluginVersion")
+        // Strong skipping is the Kotlin 2 default, so read-only Lists in UI state are stable enough.
+        disable += "ComposeUnstableCollections"
     }
 }
 
@@ -65,10 +67,12 @@ kotlin {
 dependencies {
     implementation(project(":core"))
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.androidx.navigation3.runtime)
@@ -88,4 +92,6 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.compose.ui.test.junit4)
+    // Compose's test rule pulls an Espresso that still reflects on InputManager.getInstance, gone in Android 17.
+    testImplementation(libs.androidx.test.espresso.core)
 }

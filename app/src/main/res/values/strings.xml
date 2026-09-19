@@ -5,4 +5,18 @@
     <string name="resolving">Resolving redirects…</string>
     <string name="share_without_resolving">Share without resolving</string>
     <string name="rules_unavailable">Shear\'s rules failed to load, so the text was shared unchanged</string>
+    <string name="history_title">History</string>
+    <string name="settings_title">Settings</string>
+    <string name="history_empty">Nothing shared through Shear yet</string>
+    <string name="history_retention_off">History is off. Shares are cleaned but not recorded.</string>
+    <string name="rules_banner">Shear\'s rules failed to load. Text is being shared unchanged.</string>
+    <string name="no_links">No links</string>
+    <string name="destination_unknown">Destination not reported</string>
+    <string name="status_cleaned">Cleaned</string>
+    <string name="status_unchanged">Already clean</string>
+    <string name="status_no_urls">No links</string>
+    <string name="status_rules_unavailable">Rules unavailable</string>
+    <string name="status_resolution_incomplete">Partly resolved</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="open_event">Open share details</string>
 </resources>
