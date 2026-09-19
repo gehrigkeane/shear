@@ -1,0 +1,4 @@
+# ref: https://github.com/crate-ci/typos/blob/master/docs/reference.md
+[files]
+# Vendored upstream data and generated wrapper scripts are not ours to spell-check.
+extend-exclude = ["core/src/main/resources/brave/*.json", "gradle/wrapper/**", "gradlew", "gradlew.bat"]

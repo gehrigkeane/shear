@@ -1,0 +1,45 @@
+[global]
+flavor = "gfm"
+line-length = 120
+respect-gitignore = true
+exclude = ["build", ".gradle"]
+
+# MD013 — line length and reflow.
+# semantic-line-breaks cascades: sentence -> clause punctuation (, ; : —)
+# -> conjunctions (and/or/but/which/because/...) -> word-wrap, all gated by line-length.
+[MD013]
+line-length = 120
+reflow = true
+reflow-mode = "semantic-line-breaks"
+code-blocks = false
+tables = false
+headings = true
+paragraphs = true
+length-mode = "visual"
+
+[MD003]
+style = "atx"
+
+[MD004]
+style = "dash"
+
+[MD007]
+indent = 2
+
+[MD035]
+style = "---"
+
+[MD046]
+style = "fenced"
+
+[MD048]
+style = "backtick"
+
+[MD049]
+style = "underscore"
+
+[MD050]
+style = "asterisk"
+
+[per-file-ignores]
+".github/PULL_REQUEST_TEMPLATE.md" = ["MD041"]
