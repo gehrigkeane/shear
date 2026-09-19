@@ -1,0 +1,42 @@
+# shear
+
+### Project ###
+# Claude Code / agent scratch
+.claude/
+.superpowers/
+plan.md
+
+# mise per-machine overrides
+mise.local.toml
+
+# rumdl cache
+.rumdl_cache/
+
+# Release signing material. Never committed; CI receives it through repository secrets.
+keystore.properties
+*.jks
+*.keystore
+
+### Gradle ###
+.gradle/
+build/
+.kotlin/
+
+# gradle-wrapper.jar is deliberately tracked. It is what makes `./gradlew` work on a fresh checkout, and CI
+# validates its checksum against the official distribution.
+
+### Android ###
+# The SDK path comes from ANDROID_HOME, exported by mise. A committed local.properties would pin one machine's
+# path onto everyone else's.
+local.properties
+*.apk
+*.aab
+captures/
+.cxx/
+
+### IDE ###
+.idea/
+*.iml
+
+### macOS ###
+.DS_Store

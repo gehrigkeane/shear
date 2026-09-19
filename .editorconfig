@@ -1,0 +1,22 @@
+# ref: https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+[*.{kt,kts}]
+# ktfmt kotlinlang style: 4-space blocks at 120 columns. The formatter is authoritative; this keeps editors aligned.
+indent_size = 4
+
+[*.md]
+# Two trailing spaces are a hard line break in markdown.
+trim_trailing_whitespace = false
+
+[*.bat]
+end_of_line = crlf

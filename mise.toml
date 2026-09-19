@@ -1,0 +1,24 @@
+[tools]
+# Repo-wide file linters: markdown, TOML, GitHub workflows, spelling.
+rumdl = "latest"
+taplo = "latest"
+actionlint = "latest"
+typos = "latest"
+
+# `fmt` mutates; `fmt-check` and `lint` only verify. Deliberately no task depends on `fmt`: a gate that silently
+# fixes the thing it checks cannot fail.
+[tasks.fmt]
+description = "Format markdown and TOML"
+run = ["rumdl check --fix .", "taplo fmt"]
+
+[tasks.fmt-check]
+description = "Check formatting without writing"
+run = ["rumdl check .", "taplo fmt --check"]
+
+[tasks.lint]
+description = "Lint GitHub workflows and spelling"
+run = ["actionlint", "typos"]
+
+[tasks.ci]
+description = "Everything CI runs: format check and lint"
+depends = ["fmt-check", "lint"]

@@ -1,0 +1,7 @@
+# ref: https://taplo.tamasfe.dev/configuration/file.html
+include = ["*.toml", "gradle/*.toml"]
+
+[formatting]
+column_width = 120
+align_entries = false
+reorder_keys = false
