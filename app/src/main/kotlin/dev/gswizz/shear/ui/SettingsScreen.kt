@@ -218,33 +218,12 @@ fun SettingsScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())) {
-            SectionTitle(text = stringResource(R.string.settings_redirects))
-            RadioRow(
-                title = stringResource(R.string.settings_redirects_off),
-                description = stringResource(R.string.settings_redirects_off_desc),
-                selected = state.settings.redirectMode == ResolveMode.OFF,
-                onSelect = { callbacks.onRedirectMode(ResolveMode.OFF) },
+            SectionTitle(text = stringResource(R.string.settings_share_sheet))
+            ListItem(
+                headlineContent = { Text(text = stringResource(R.string.settings_pin)) },
+                supportingContent = { Text(text = stringResource(R.string.settings_pin_desc)) },
+                modifier = Modifier.clickable(onClick = callbacks.onPinDemo),
             )
-            RadioRow(
-                title = stringResource(R.string.settings_redirects_smart),
-                description = stringResource(R.string.settings_redirects_smart_desc),
-                selected = state.settings.redirectMode == ResolveMode.SMART,
-                onSelect = { callbacks.onRedirectMode(ResolveMode.SMART) },
-            )
-            RadioRow(
-                title = stringResource(R.string.settings_redirects_all),
-                description = stringResource(R.string.settings_redirects_all_desc),
-                selected = state.settings.redirectMode == ResolveMode.RESOLVE_ALL,
-                onSelect = { callbacks.onRedirectMode(ResolveMode.RESOLVE_ALL) },
-            )
-            if (state.settings.redirectMode != ResolveMode.OFF) {
-                Text(
-                    text = stringResource(R.string.settings_redirects_disclosure),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             SectionTitle(text = stringResource(R.string.settings_moment))
             for (style in MomentStyle.entries) {
                 val (title, description) = momentLabels(style)
@@ -287,12 +266,33 @@ fun SettingsScreen(
             TextButton(onClick = callbacks.onClearHistory, modifier = Modifier.padding(horizontal = 8.dp)) {
                 Text(text = stringResource(R.string.settings_clear_history))
             }
-            SectionTitle(text = stringResource(R.string.settings_share_sheet))
-            ListItem(
-                headlineContent = { Text(text = stringResource(R.string.settings_pin)) },
-                supportingContent = { Text(text = stringResource(R.string.settings_pin_desc)) },
-                modifier = Modifier.clickable(onClick = callbacks.onPinDemo),
+            SectionTitle(text = stringResource(R.string.settings_redirects))
+            RadioRow(
+                title = stringResource(R.string.settings_redirects_off),
+                description = stringResource(R.string.settings_redirects_off_desc),
+                selected = state.settings.redirectMode == ResolveMode.OFF,
+                onSelect = { callbacks.onRedirectMode(ResolveMode.OFF) },
             )
+            RadioRow(
+                title = stringResource(R.string.settings_redirects_smart),
+                description = stringResource(R.string.settings_redirects_smart_desc),
+                selected = state.settings.redirectMode == ResolveMode.SMART,
+                onSelect = { callbacks.onRedirectMode(ResolveMode.SMART) },
+            )
+            RadioRow(
+                title = stringResource(R.string.settings_redirects_all),
+                description = stringResource(R.string.settings_redirects_all_desc),
+                selected = state.settings.redirectMode == ResolveMode.RESOLVE_ALL,
+                onSelect = { callbacks.onRedirectMode(ResolveMode.RESOLVE_ALL) },
+            )
+            if (state.settings.redirectMode != ResolveMode.OFF) {
+                Text(
+                    text = stringResource(R.string.settings_redirects_disclosure),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             SectionTitle(text = stringResource(R.string.settings_about))
             ListItem(
                 headlineContent = { Text(text = stringResource(R.string.settings_rules)) },
