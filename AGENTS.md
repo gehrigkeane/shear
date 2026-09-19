@@ -69,7 +69,8 @@ mise run ci           # the gate
 | `sdk`          | Install SDK platform 37 and platform-tools, accept licenses      |
 | `sdk-emulator` | Add the emulator and an arm64 API 37 system image                |
 | `avd`          | Create the `shear` virtual device                                |
-| `emulator`     | Boot the `shear` virtual device                                  |
+| `emulator`     | Boot the `shear` virtual device and return once it is ready      |
+| `emulator-stop`| Shut down the `shear` virtual device                             |
 | `build`        | Assemble the debug APK                                           |
 | `install`      | Install the debug APK on the connected device                    |
 | `run`          | Install and launch the app                                       |
