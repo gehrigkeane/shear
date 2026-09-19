@@ -29,10 +29,14 @@ class FakeEngine(
 ) : ShearEngine {
     val processed = mutableListOf<ResolveMode>()
 
+    /** When set, `process` suspends until the deferred completes, so tests can observe the in-flight state. */
+    var gate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+
     override fun clean(text: String): TextResult = results.getValue(ResolveMode.OFF)(text)
 
     override suspend fun process(text: String, mode: ResolveMode): TextResult {
         processed += mode
+        gate?.await()
         return (results[mode] ?: results.getValue(ResolveMode.OFF))(text)
     }
 
@@ -56,6 +60,40 @@ class FakeEngine(
                 ),
                 networkNeeded = networkNeeded,
                 rulesHealthy = healthy,
+            )
+
+        /** An engine whose offline pass leaves [short] alone and whose network pass replaces it with [resolved]. */
+        fun resolving(short: String, resolved: String) =
+            FakeEngine(
+                mapOf(
+                    ResolveMode.OFF to
+                        { text: String ->
+                            TextResult(
+                                text,
+                                text,
+                                listOf(
+                                    dev.gswizz.shear.data.HistoryFixtures.trace.copy(
+                                        originalUrl = short,
+                                        finalUrl = short,
+                                    )
+                                ),
+                            )
+                        },
+                    ResolveMode.SMART to
+                        { text: String ->
+                            TextResult(
+                                text,
+                                text.replace(short, resolved),
+                                listOf(
+                                    dev.gswizz.shear.data.HistoryFixtures.trace.copy(
+                                        originalUrl = short,
+                                        finalUrl = resolved,
+                                    )
+                                ),
+                            )
+                        },
+                ),
+                networkNeeded = true,
             )
 
         /** An engine that finds no URLs. */
