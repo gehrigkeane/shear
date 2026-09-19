@@ -134,7 +134,7 @@ internal class TraceSink(private val rulesVersion: String) {
         if (failure == null) failure = CleanFailure(kind, at.toUrlString(), detail)
     }
 
-    fun result(originalUrl: String, finalUrl: String): UrlCleanResult =
+    fun result(originalUrl: String, finalUrl: String, failure: CleanFailure? = this.failure): UrlCleanResult =
         UrlCleanResult(
             originalUrl,
             finalUrl,
