@@ -39,6 +39,7 @@ class SettingsRepositoryTest {
             val settings = SettingsRepository(store(this)).settings.first()
             assertEquals(Settings(ResolveMode.OFF, HistoryRetention.DAYS_30, retainOriginals = true), settings)
             assertEquals(Settings(), settings)
+            assertEquals(MomentStyle.CUT, settings.moment)
         }
 
     @Test
@@ -55,6 +56,8 @@ class SettingsRepositoryTest {
                 assertEquals(false, awaitItem().retainOriginals)
                 repository.setPinPromptSeen()
                 assertEquals(true, awaitItem().pinPromptSeen)
+                repository.setMoment(MomentStyle.CONFETTI)
+                assertEquals(MomentStyle.CONFETTI, awaitItem().moment)
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -66,6 +69,7 @@ class SettingsRepositoryTest {
             dataStore.edit {
                 it[stringPreferencesKey("redirect_mode")] = "TELEPORT"
                 it[stringPreferencesKey("history_retention")] = "FOREVER_AND_A_DAY"
+                it[stringPreferencesKey("share_moment")] = "FIREWORKS"
             }
             assertEquals(Settings(), SettingsRepository(dataStore).settings.first())
         }

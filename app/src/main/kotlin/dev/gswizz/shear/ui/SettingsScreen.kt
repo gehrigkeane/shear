@@ -41,6 +41,7 @@ import dev.gswizz.shear.AppGraph
 import dev.gswizz.shear.R
 import dev.gswizz.shear.core.net.ResolveMode
 import dev.gswizz.shear.data.HistoryRetention
+import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -77,6 +78,7 @@ data class SettingsCallbacks(
     val onDismiss: () -> Unit,
     val onOpenUpstream: () -> Unit,
     val onPinDemo: () -> Unit,
+    val onMoment: (MomentStyle) -> Unit,
 )
 
 class SettingsViewModel(private val graph: AppGraph, appVersion: String) : ViewModel() {
@@ -110,6 +112,10 @@ class SettingsViewModel(private val graph: AppGraph, appVersion: String) : ViewM
 
     fun setRetainOriginals(retain: Boolean) {
         viewModelScope.launch { graph.settings.setRetainOriginals(retain) }
+    }
+
+    fun setMoment(style: MomentStyle) {
+        viewModelScope.launch { graph.settings.setMoment(style) }
     }
 
     fun requestClearHistory() {
@@ -162,6 +168,7 @@ fun SettingsRoute(
                 onDismiss = viewModel::dismiss,
                 onOpenUpstream = onOpenUpstream,
                 onPinDemo = onPinDemo,
+                onMoment = viewModel::setMoment,
             ),
         onBack = onBack,
         modifier = modifier,
@@ -218,6 +225,16 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            SectionTitle(text = stringResource(R.string.settings_moment))
+            for (style in MomentStyle.entries) {
+                val (title, description) = momentLabels(style)
+                RadioRow(
+                    title = stringResource(title),
+                    description = stringResource(description),
+                    selected = state.settings.moment == style,
+                    onSelect = { callbacks.onMoment(style) },
                 )
             }
             SectionTitle(text = stringResource(R.string.settings_history))
@@ -277,6 +294,15 @@ fun SettingsScreen(
         ConfirmationDialog(pending = pending, onConfirm = callbacks.onConfirm, onDismiss = callbacks.onDismiss)
     }
 }
+
+/** Title and one-line description resources for a [MomentStyle] radio row. */
+private fun momentLabels(style: MomentStyle): Pair<Int, Int> =
+    when (style) {
+        MomentStyle.OFF -> R.string.moment_off to R.string.moment_off_desc
+        MomentStyle.CUT -> R.string.moment_cut to R.string.moment_cut_desc
+        MomentStyle.CONFETTI -> R.string.moment_confetti to R.string.moment_confetti_desc
+        MomentStyle.TYPEWRITER -> R.string.moment_typewriter to R.string.moment_typewriter_desc
+    }
 
 @Composable
 private fun SectionTitle(text: String, modifier: Modifier = Modifier) {

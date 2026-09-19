@@ -12,6 +12,7 @@ import dev.gswizz.shear.TestGraph
 import dev.gswizz.shear.core.net.ResolveMode
 import dev.gswizz.shear.data.HistoryFixtures
 import dev.gswizz.shear.data.HistoryRetention
+import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
 import dev.gswizz.shear.data.ShareStatus
 import kotlinx.coroutines.Dispatchers
@@ -89,6 +90,8 @@ class SettingsViewModelTest {
             awaitUntil { it.settings.retention == HistoryRetention.INDEFINITE }
             viewModel.setRetainOriginals(false)
             awaitUntil { !it.settings.retainOriginals }
+            viewModel.setMoment(MomentStyle.TYPEWRITER)
+            awaitUntil { it.settings.moment == MomentStyle.TYPEWRITER }
             viewModel.requestClearHistory()
             awaitUntil { it.confirmation == Confirmation.CLEAR_HISTORY }
             viewModel.confirm()

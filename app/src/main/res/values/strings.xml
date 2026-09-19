@@ -44,6 +44,15 @@
     <string name="settings_redirects_all">Resolve all</string>
     <string name="settings_redirects_all_desc">Follow redirects for every link over the network</string>
     <string name="settings_redirects_disclosure">Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer.</string>
+    <string name="settings_moment">Share moment</string>
+    <string name="moment_off">Off</string>
+    <string name="moment_off_desc">Straight to the share sheet</string>
+    <string name="moment_cut">The Cut</string>
+    <string name="moment_cut_desc">Watch the tracking tail get sheared off</string>
+    <string name="moment_confetti">Confetti</string>
+    <string name="moment_confetti_desc">Pixel confetti in Shear\'s colors</string>
+    <string name="moment_typewriter">Typewriter</string>
+    <string name="moment_typewriter_desc">The wordmark types itself in</string>
     <string name="settings_history">History</string>
     <string name="settings_retention_off">Don\'t keep history</string>
     <string name="settings_retention_30">Keep for 30 days</string>

@@ -22,6 +22,18 @@ enum class HistoryRetention {
     INDEFINITE,
 }
 
+/** What plays between picking Shear and the sharesheet appearing. */
+enum class MomentStyle {
+    /** Straight to the sharesheet, nothing drawn. */
+    OFF,
+    /** The tracking tail is sheared off the URL. */
+    CUT,
+    /** Pixel confetti in the flavor's accents. */
+    CONFETTI,
+    /** The wordmark types itself in. */
+    TYPEWRITER,
+}
+
 /** Everything the user can configure. Defaults are the privacy-preserving choices. */
 data class Settings(
     val redirectMode: ResolveMode = ResolveMode.OFF,
@@ -29,6 +41,7 @@ data class Settings(
     val retainOriginals: Boolean = true,
     /** Whether the one-time hint about pinning Shear in the sharesheet has been shown or dismissed. */
     val pinPromptSeen: Boolean = false,
+    val moment: MomentStyle = MomentStyle.CUT,
 )
 
 /** Read and write access to [Settings]; the interface exists so tests can substitute an in-memory store. */
@@ -42,6 +55,8 @@ interface SettingsStore {
     suspend fun setRetainOriginals(retain: Boolean)
 
     suspend fun setPinPromptSeen()
+
+    suspend fun setMoment(style: MomentStyle)
 }
 
 /**
@@ -62,6 +77,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
                         ?: HistoryRetention.DAYS_30,
                 retainOriginals = prefs[RETAIN_ORIGINALS] ?: true,
                 pinPromptSeen = prefs[PIN_PROMPT_SEEN] ?: false,
+                moment =
+                    prefs[MOMENT]?.let { name -> MomentStyle.entries.firstOrNull { it.name == name } }
+                        ?: MomentStyle.CUT,
             )
         }
 
@@ -81,10 +99,15 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         dataStore.edit { it[PIN_PROMPT_SEEN] = true }
     }
 
+    override suspend fun setMoment(style: MomentStyle) {
+        dataStore.edit { it[MOMENT] = style.name }
+    }
+
     private companion object {
         val REDIRECT_MODE = stringPreferencesKey("redirect_mode")
         val RETENTION = stringPreferencesKey("history_retention")
         val RETAIN_ORIGINALS = booleanPreferencesKey("retain_originals")
         val PIN_PROMPT_SEEN = booleanPreferencesKey("pin_prompt_seen")
+        val MOMENT = stringPreferencesKey("share_moment")
     }
 }

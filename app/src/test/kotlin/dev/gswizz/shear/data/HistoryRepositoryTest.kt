@@ -35,6 +35,8 @@ class FakeSettingsStore(initial: Settings = Settings()) : SettingsStore {
 
     override suspend fun setPinPromptSeen() = state.update { it.copy(pinPromptSeen = true) }
 
+    override suspend fun setMoment(style: MomentStyle) = state.update { it.copy(moment = style) }
+
     private inline fun MutableStateFlow<Settings>.update(f: (Settings) -> Settings) {
         value = f(value)
     }
