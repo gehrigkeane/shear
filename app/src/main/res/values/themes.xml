@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose owns the UI; the platform theme only needs to stay out of the way. -->
+    <style name="Theme.Shear" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+
+    <!-- For the relay activity, which finishes inside onCreate and must never draw a frame. -->
+    <style name="Theme.Shear.Relay" parent="android:Theme.NoDisplay" />
+</resources>
