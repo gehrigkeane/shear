@@ -24,6 +24,7 @@ class AppGraphTest {
         assertTrue("manifest must name ShearApplication", app is ShearApplication)
         val graph = (app as ShearApplication).graph
         assertEquals(Settings(), graph.settings.settings.first())
+        assertTrue(graph.history.observeEvents().first().isEmpty())
         val engine = graph.engine()
         assertTrue(engine.rulesHealthy)
         assertEquals(40, engine.rulesVersion.length)
