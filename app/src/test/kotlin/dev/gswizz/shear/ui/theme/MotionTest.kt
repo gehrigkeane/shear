@@ -23,7 +23,7 @@ class MotionTest {
     fun `the cut lets the eye land on the URL before the blade moves`() {
         assertTrue(Motion.CUT_HOLD_MS >= 200)
         assertTrue(
-            Motion.CUT_HOLD_MS + Motion.CUT_SWEEP_MS + Motion.CUT_SLIDE_MS + Motion.CUT_SETTLE_MS <= Motion.CUT_MS
+            Motion.CUT_HOLD_MS + Motion.CUT_SWEEP_MS + Motion.CUT_REFLOW_MS + Motion.CUT_SETTLE_MS <= Motion.CUT_MS
         )
     }
 }

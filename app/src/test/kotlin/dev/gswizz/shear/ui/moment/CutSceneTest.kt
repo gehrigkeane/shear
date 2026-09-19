@@ -11,54 +11,71 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CutSceneTest {
-    // "ab" | "cd&" | "e": a kept run, a removed run, a kept run; 20 + 30 + 10 wide. The blade waits 200 ms, then
-    // sweeps 60 in 600 ms.
-    private val scene =
-        CutScene(
+    // "ab" kept, "cd&" removed, "e" kept: six characters wrapped at four columns, so two lines. The blade waits
+    // 200 ms, then crosses all six characters in 600 ms, then the survivors reflow over 350 ms.
+    private val plan =
+        CutPlan(
+            original = "abcd&e",
+            final = "abe",
             segments =
                 listOf(Segment("ab", removed = false), Segment("cd&", removed = true), Segment("e", removed = false)),
-            widths = listOf(20f, 30f, 10f),
-            holdMs = 200,
-            sweepMs = 600,
-            slideMs = 100,
+            wholesale = false,
         )
+    private val scene = CutScene.of(plan, columns = 4, holdMs = 200, sweepMs = 600, reflowMs = 350)
 
     @Test
-    fun `at rest nothing is cut and every run sits at its natural position`() {
-        assertEquals(0f, scene.bladeX(0f), 0f)
-        assertEquals(0f, scene.bladeX(200f), 0f)
-        assertEquals(0f, scene.cutFraction(1, 0f), 0f)
-        assertEquals(0f, scene.x(0, 0f), 0f)
-        assertEquals(20f, scene.x(1, 0f), 0f)
-        assertEquals(50f, scene.x(2, 0f), 0f)
-        assertFalse(scene.finished(0f))
+    fun `characters carry their run's fate and wrap into lines`() {
+        assertEquals("abcd&e", scene.chars.joinToString("") { it.char.toString() })
+        assertEquals(listOf(false, false, true, true, true, false), scene.chars.map { it.removed })
+        assertEquals(2, scene.lines)
+        assertEquals(0, scene.lineOf(3))
+        assertEquals(1, scene.lineOf(4))
+        assertEquals(1, scene.columnOf(5))
     }
 
     @Test
-    fun `the blade cuts a removed run progressively and kept runs never cut`() {
-        // 500 ms: 300 ms into the sweep, blade at 30, ten pixels into the removed run.
-        assertEquals(30f, scene.bladeX(500f), 0.001f)
-        assertEquals(1f / 3f, scene.cutFraction(1, 500f), 0.001f)
-        assertEquals(0f, scene.cutFraction(0, 500f), 0f)
-        assertEquals(0f, scene.cutFraction(2, 500f), 0f)
-        // The run after it has not started sliding: the blade has not cleared the removed run yet.
-        assertEquals(50f, scene.x(2, 500f), 0.001f)
+    fun `the blade waits, then crosses every character at a steady pace`() {
+        assertEquals(0f, scene.bladeIndex(0f), 0f)
+        assertEquals(0f, scene.bladeIndex(200f), 0f)
+        assertEquals(3f, scene.bladeIndex(500f), 0.001f)
+        assertEquals(0, scene.bladeLine(500f))
+        assertEquals(3f, scene.bladeColumn(500f), 0.001f)
+        // 700 ms: five characters in, so on the second line, one column along.
+        assertEquals(1, scene.bladeLine(700f))
+        assertEquals(1f, scene.bladeColumn(700f), 0.001f)
+        assertEquals(6f, scene.bladeIndex(800f), 0.001f)
     }
 
     @Test
-    fun `once the blade clears a removed run the runs after it slide left to close the gap`() {
-        // Blade clears x=50 at 700 ms; the slide takes 100 ms.
-        assertEquals(0f, scene.slide(1, 700f), 0.001f)
-        assertEquals(0.5f, scene.slide(1, 750f), 0.001f)
-        assertEquals(35f, scene.x(2, 750f), 0.001f)
-        assertEquals(1f, scene.slide(1, 800f), 0.001f)
-        assertEquals(20f, scene.x(2, 800f), 0.001f)
+    fun `a removed character is cut once the blade has passed it and kept ones never are`() {
+        assertFalse(scene.isCut(2, 400f))
+        assertTrue(scene.isCut(2, 500f))
+        assertFalse(scene.isCut(3, 500f))
+        assertTrue(scene.isCut(4, 800f))
+        assertFalse(scene.isCut(0, 900f))
+        assertFalse(scene.isCut(5, 900f))
     }
 
     @Test
-    fun `finished once the sweep and the last slide are done`() {
-        assertFalse(scene.finished(850f))
-        assertTrue(scene.finished(900f))
-        assertEquals(1f, scene.cutFraction(1, 900f), 0f)
+    fun `after the sweep the survivors reflow into the final URL then the scene is done`() {
+        assertEquals(0f, scene.reflow(800f), 0f)
+        assertEquals(0.5f, scene.reflow(975f), 0.001f)
+        assertEquals(1f, scene.reflow(1150f), 0f)
+        assertFalse(scene.finished(1149f))
+        assertTrue(scene.finished(1150f))
+    }
+
+    @Test
+    fun `a wholesale plan is every character removed`() {
+        val wholesale =
+            CutPlan(
+                "https://go.example/r",
+                "https://dest.example/",
+                listOf(Segment("https://go.example/r", true)),
+                true,
+            )
+        val scene = CutScene.of(wholesale, columns = 10, holdMs = 0, sweepMs = 100, reflowMs = 100)
+        assertTrue(scene.chars.all { it.removed })
+        assertEquals(2, scene.lines)
     }
 }
