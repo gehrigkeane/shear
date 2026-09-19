@@ -4,6 +4,7 @@ kotlin = "2.4.20"
 ksp = "2.3.12"
 composeBom = "2026.09.00"
 activityCompose = "1.13.0"
+coreKtx = "1.19.0"
 room = "2.8.5"
 coroutines = "1.11.0"
 serialization = "1.11.0"
@@ -16,16 +17,19 @@ datastore = "1.2.1"
 robolectric = "4.17"
 junit4 = "4.13.2"
 androidxTestCore = "1.7.0"
+espresso = "3.7.0"
 turbine = "1.2.1"
 spotless = "8.10.2"
 ktfmt = "0.64"
 
 [libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -46,6 +50,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 junit4 = { module = "junit:junit", version.ref = "junit4" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 compose-lint-checks = { module = "com.slack.lint.compose:compose-lint-checks", version.ref = "composeLintChecks" }
 
 [plugins]
