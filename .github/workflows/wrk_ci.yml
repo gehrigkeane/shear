@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 30
     steps:
       # ref: https://github.com/actions/checkout
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # ref: https://github.com/jdx/mise-action
       # Exports JAVA_HOME and ANDROID_HOME from mise, overriding the runner's presets so CI and local resolve the
