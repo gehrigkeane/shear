@@ -40,6 +40,7 @@ class EventDetailViewModelTest {
             val event = loaded.event
             assertEquals(HistoryFixtures.ORIGINAL, event.originalText)
             assertEquals(HistoryFixtures.CLEANED, event.cleanedText)
+            assertEquals("dest.example", event.summary)
             assertEquals("Messages", event.destination?.label)
             assertEquals(ShareStatus.RESOLUTION_INCOMPLETE, event.status)
             val trace = event.traces.single()

@@ -25,7 +25,6 @@
     <string name="detail_original_not_retained">Original not retained (hash %1$s)</string>
     <string name="detail_cleaned">Shared</string>
     <string name="copy">Copy</string>
-    <string name="detail_destination">Sent to %1$s</string>
     <string name="detail_rules_version">Rules %1$s</string>
     <string name="detail_trace_title">Link %1$d</string>
     <string name="detail_rules_applied">Rules applied</string>
