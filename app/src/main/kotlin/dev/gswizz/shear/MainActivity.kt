@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     graph = graph,
                     appVersion = appVersion,
                     onOpenUpstream = { startActivity(Intent(Intent.ACTION_VIEW, SettingsUiState.UPSTREAM.toUri())) },
+                    onPinDemo = { startActivity(PinDemo.chooser()) },
                 )
             }
         }
@@ -65,7 +66,13 @@ class MainActivity : ComponentActivity() {
 /** The navigation shell. A shared-transition layout wraps the display so a history row can glide into its details. */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ShearApp(graph: AppGraph, appVersion: String, onOpenUpstream: () -> Unit, modifier: Modifier = Modifier) {
+private fun ShearApp(
+    graph: AppGraph,
+    appVersion: String,
+    onOpenUpstream: () -> Unit,
+    onPinDemo: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val backStack = rememberNavBackStack(HistoryKey)
     SharedTransitionLayout(modifier = modifier) {
         NavDisplay(
@@ -80,6 +87,7 @@ private fun ShearApp(graph: AppGraph, appVersion: String, onOpenUpstream: () -> 
                             graph = graph,
                             onOpen = { backStack.add(EventDetailKey(it)) },
                             onSettings = { backStack.add(SettingsKey) },
+                            onPinDemo = onPinDemo,
                             shared = sharedScopes(),
                         )
                     }
@@ -97,6 +105,7 @@ private fun ShearApp(graph: AppGraph, appVersion: String, onOpenUpstream: () -> 
                             appVersion = appVersion,
                             onBack = { backStack.removeLastOrNull() },
                             onOpenUpstream = onOpenUpstream,
+                            onPinDemo = onPinDemo,
                         )
                     }
                 },

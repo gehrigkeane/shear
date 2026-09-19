@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import dev.gswizz.shear.core.net.ResolveMode
 import dev.gswizz.shear.data.Settings
 import org.junit.Assert.assertEquals
@@ -23,7 +24,7 @@ import org.robolectric.annotation.GraphicsMode
 class SettingsScreenTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {})
+    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {})
 
     private val disclosure =
         "Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer."
@@ -50,6 +51,17 @@ class SettingsScreenTest {
             )
         }
         compose.onNodeWithText(disclosure).assertIsDisplayed()
+    }
+
+    @Test
+    fun `the share sheet row launches the pin demo`() {
+        var demos = 0
+        compose.setContent {
+            SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onPinDemo = { demos++ }), onBack = {})
+        }
+        // The row sits below Robolectric's short viewport until scrolled into it.
+        compose.onNodeWithText("Pin Shear in the share sheet").performScrollTo().performClick()
+        assertEquals(1, demos)
     }
 
     @Test

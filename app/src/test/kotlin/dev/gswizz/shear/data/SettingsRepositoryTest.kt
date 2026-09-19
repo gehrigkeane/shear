@@ -53,6 +53,8 @@ class SettingsRepositoryTest {
                 assertEquals(HistoryRetention.INDEFINITE, awaitItem().retention)
                 repository.setRetainOriginals(false)
                 assertEquals(false, awaitItem().retainOriginals)
+                repository.setPinPromptSeen()
+                assertEquals(true, awaitItem().pinPromptSeen)
                 cancelAndIgnoreRemainingEvents()
             }
         }

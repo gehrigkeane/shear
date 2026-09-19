@@ -75,6 +75,32 @@ class HistoryScreenTest {
     }
 
     @Test
+    fun `the pin card offers a demo and can be dismissed`() {
+        var demos = 0
+        var dismissed = 0
+        compose.setContent {
+            HistoryScreen(
+                state = HistoryUiState(loading = false, showPinPrompt = true),
+                onOpen = {},
+                onSettings = {},
+                onPinDemo = { demos++ },
+                onDismissPin = { dismissed++ },
+            )
+        }
+        compose.onNodeWithText("Pin Shear to the top of the share sheet").assertIsDisplayed()
+        compose.onNodeWithText("Show me").performClick()
+        compose.onNodeWithText("Dismiss").performClick()
+        assertEquals(1, demos)
+        assertEquals(1, dismissed)
+    }
+
+    @Test
+    fun `the pin card stays hidden once seen`() {
+        compose.setContent { HistoryScreen(state = HistoryUiState(loading = false), onOpen = {}, onSettings = {}) }
+        compose.onNodeWithText("Pin Shear to the top of the share sheet").assertDoesNotExist()
+    }
+
+    @Test
     fun `an empty history says so`() {
         compose.setContent { HistoryScreen(state = HistoryUiState(loading = false), onOpen = {}, onSettings = {}) }
         compose.onNodeWithText("Nothing shared through Shear yet").assertIsDisplayed()

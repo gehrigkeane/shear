@@ -27,6 +27,8 @@ data class Settings(
     val redirectMode: ResolveMode = ResolveMode.OFF,
     val retention: HistoryRetention = HistoryRetention.DAYS_30,
     val retainOriginals: Boolean = true,
+    /** Whether the one-time hint about pinning Shear in the sharesheet has been shown or dismissed. */
+    val pinPromptSeen: Boolean = false,
 )
 
 /** Read and write access to [Settings]; the interface exists so tests can substitute an in-memory store. */
@@ -38,6 +40,8 @@ interface SettingsStore {
     suspend fun setRetention(retention: HistoryRetention)
 
     suspend fun setRetainOriginals(retain: Boolean)
+
+    suspend fun setPinPromptSeen()
 }
 
 /**
@@ -57,6 +61,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
                     prefs[RETENTION]?.let { name -> HistoryRetention.entries.firstOrNull { it.name == name } }
                         ?: HistoryRetention.DAYS_30,
                 retainOriginals = prefs[RETAIN_ORIGINALS] ?: true,
+                pinPromptSeen = prefs[PIN_PROMPT_SEEN] ?: false,
             )
         }
 
@@ -72,9 +77,14 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         dataStore.edit { it[RETAIN_ORIGINALS] = retain }
     }
 
+    override suspend fun setPinPromptSeen() {
+        dataStore.edit { it[PIN_PROMPT_SEEN] = true }
+    }
+
     private companion object {
         val REDIRECT_MODE = stringPreferencesKey("redirect_mode")
         val RETENTION = stringPreferencesKey("history_retention")
         val RETAIN_ORIGINALS = booleanPreferencesKey("retain_originals")
+        val PIN_PROMPT_SEEN = booleanPreferencesKey("pin_prompt_seen")
     }
 }
