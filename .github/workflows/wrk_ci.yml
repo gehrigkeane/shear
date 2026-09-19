@@ -22,14 +22,22 @@ jobs:
   ci:
     name: ci
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       # ref: https://github.com/actions/checkout
       - uses: actions/checkout@v4
 
       # ref: https://github.com/jdx/mise-action
+      # Exports JAVA_HOME and ANDROID_HOME from mise, overriding the runner's presets so CI and local resolve the
+      # same toolchain.
       - uses: jdx/mise-action@v4
         with:
           experimental: true
+
+      # ref: https://github.com/gradle/actions
+      # Validates the wrapper checksum and caches Gradle dependencies and build outputs between runs.
+      - uses: gradle/actions/setup-gradle@v6
+
+      - run: mise run sdk
 
       - run: mise run ci

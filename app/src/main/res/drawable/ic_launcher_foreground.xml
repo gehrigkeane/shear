@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder mark: a link being cut. Two chain links with a shear line through the join. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F5E0DC"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M40,54 L32,54 A10,10 0 0 1 32,34 L44,34 A10,10 0 0 1 54,44 M68,54 L76,54 A10,10 0 0 1 76,74 L64,74 A10,10 0 0 1 54,64" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F38BA8"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M42,66 L66,42" />
+</vector>

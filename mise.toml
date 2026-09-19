@@ -1,9 +1,56 @@
+[settings]
+# Gradle tasks share one project lock; running `ci`'s dependencies concurrently only makes daemons queue.
+jobs = 1
+
 [tools]
+# AGP 9 requires JDK 17+; 21 is the LTS the Android toolchain targets. mise exports JAVA_HOME, which Gradle honors.
+java = "temurin-21"
+# Android command-line tools. The plugin exports ANDROID_HOME and puts sdkmanager, adb, and emulator on PATH, so
+# Gradle needs no local.properties. `mise run sdk` installs the platform pieces a build needs.
+android-sdk = "23.0"
 # Repo-wide file linters: markdown, TOML, GitHub workflows, spelling.
 rumdl = "latest"
 taplo = "latest"
 actionlint = "latest"
 typos = "latest"
+
+# `android sdk` is the successor to the deprecated sdkmanager and ships in cmdline-tools 23+. `yes` answers any
+# license prompt so the task also runs unattended in CI.
+[tasks.sdk]
+description = "Install SDK platform 37.2, build-tools, and platform-tools (what a build needs, also run in CI)"
+run = "yes | android sdk install platforms/android-37.2 build-tools/37.0.0 platform-tools"
+
+[tasks.sdk-emulator]
+description = "Install the emulator and the arm64 API 37 system image (local only)"
+depends = ["sdk"]
+run = "yes | android sdk install emulator system-images/android-37.0/google_apis/arm64-v8a"
+
+[tasks.avd]
+description = "Create the 'shear' AVD if missing"
+depends = ["sdk-emulator"]
+run = "avdmanager list avd | grep -q 'Name: shear' || avdmanager create avd -n shear -d pixel_8 -k 'system-images;android-37.0;google_apis;arm64-v8a'"
+
+[tasks.emulator]
+description = "Boot the 'shear' AVD"
+depends = ["avd"]
+run = "emulator -avd shear"
+
+[tasks.build]
+description = "Assemble the debug APK"
+run = "./gradlew assembleDebug"
+
+[tasks.install]
+description = "Install the debug APK on the connected device or emulator"
+run = "./gradlew installDebug"
+
+[tasks.run]
+description = "Install and launch the app"
+depends = ["install"]
+run = "adb shell am start -n dev.gswizz.shear/.MainActivity"
+
+[tasks.test]
+description = "Run unit tests in all modules"
+run = "./gradlew test"
 
 # `fmt` mutates; `fmt-check` and `lint` only verify. Deliberately no task depends on `fmt`: a gate that silently
 # fixes the thing it checks cannot fail.
@@ -16,9 +63,13 @@ description = "Check formatting without writing"
 run = ["rumdl check .", "taplo fmt --check"]
 
 [tasks.lint]
-description = "Lint GitHub workflows and spelling"
-run = ["actionlint", "typos"]
+description = "Android Lint, workflow lint, spelling"
+run = ["./gradlew lint", "actionlint", "typos"]
 
 [tasks.ci]
-description = "Everything CI runs: format check and lint"
-depends = ["fmt-check", "lint"]
+description = "Everything CI runs: format check, lint, test, build"
+depends = ["fmt-check", "lint", "test", "build"]
+
+[tasks.clean]
+description = "Remove Gradle build outputs"
+run = "./gradlew clean"
