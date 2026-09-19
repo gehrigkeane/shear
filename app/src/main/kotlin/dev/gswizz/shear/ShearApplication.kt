@@ -12,6 +12,7 @@ import dev.gswizz.shear.core.Shear
 import dev.gswizz.shear.core.TextResult
 import dev.gswizz.shear.core.net.OkHttpRedirectTransport
 import dev.gswizz.shear.core.net.ResolveMode
+import dev.gswizz.shear.data.DestinationResolver
 import dev.gswizz.shear.data.HistoryRepository
 import dev.gswizz.shear.data.SettingsRepository
 import dev.gswizz.shear.data.SettingsStore
@@ -62,6 +63,7 @@ class AppGraph(
     private val engineLoader: Deferred<ShearEngine>,
     val appScope: CoroutineScope,
     val defaultDispatcher: CoroutineDispatcher,
+    val destinations: DestinationResolver,
 ) {
     suspend fun engine(): ShearEngine = engineLoader.await()
 
@@ -78,6 +80,7 @@ class AppGraph(
                 engineLoader = engine,
                 appScope = appScope,
                 defaultDispatcher = Dispatchers.Default,
+                destinations = DestinationResolver(app.packageManager),
             )
         }
     }

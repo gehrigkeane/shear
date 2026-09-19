@@ -79,6 +79,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
     lintChecks(libs.compose.lint.checks)
     debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.junit4)
