@@ -70,6 +70,22 @@ run = ["./gradlew lint", "actionlint", "typos"]
 description = "Everything CI runs: format check, lint, test, build"
 depends = ["fmt-check", "lint", "test", "build"]
 
+# Brave's datasets are the only source of cleaning behavior. Snapshots are copied byte for byte from a pinned
+# upstream commit and never edited by hand; UPSTREAM records where they came from.
+[tasks.rules-update]
+description = "Refresh Brave clean-urls.json and debounce.json snapshots and record the upstream commit"
+run = """
+set -euo pipefail
+dir=core/src/main/resources/brave
+sha=$(curl -fsSL https://api.github.com/repos/brave/adblock-lists/commits/master | sed -n 's/^  "sha": "\\(.*\\)",$/\\1/p')
+test -n "$sha"
+for f in clean-urls.json debounce.json; do
+  curl -fsSL "https://raw.githubusercontent.com/brave/adblock-lists/$sha/brave-lists/$f" -o "$dir/$f"
+done
+printf 'repo: https://github.com/brave/adblock-lists\\ncommit: %s\\nfetched: %s\\nlicense: MPL-2.0\\n' \\
+  "$sha" "$(date -u +%Y-%m-%d)" > "$dir/UPSTREAM"
+"""
+
 [tasks.clean]
 description = "Remove Gradle build outputs"
 run = "./gradlew clean"

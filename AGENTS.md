@@ -78,6 +78,7 @@ mise run ci           # the gate
 | `fmt-check`    | Verify formatting and license headers without writing            |
 | `lint`         | Android Lint, workflow lint, spelling                            |
 | `ci`           | `fmt-check` + `lint` + `test` + `build`; identical to CI         |
+| `rules-update` | Refresh the Brave snapshots and record the upstream commit       |
 | `clean`        | Remove Gradle build outputs                                      |
 
 IntelliJ IDEA opens the project directly.
