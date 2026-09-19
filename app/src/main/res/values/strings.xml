@@ -45,11 +45,7 @@
     <string name="settings_redirects_all_desc">Follow every link to where it really goes (goes online)</string>
     <string name="settings_redirects_disclosure">Following a link online lets that link\'s owner see that you opened it. Shear never sends cookies, logins, or where you came from.</string>
     <string name="settings_moment">Animation</string>
-    <string name="moment_removed">Removed %1$s</string>
-    <plurals name="moment_cleaned">
-        <item quantity="one">Cleaned %d link</item>
-        <item quantity="other">Cleaned %d links</item>
-    </plurals>
+    <string name="moment_sheared">Sheared!</string>
     <string name="moment_off">Off</string>
     <string name="moment_off_desc">Skip straight to sharing</string>
     <string name="moment_cut">The Cut</string>

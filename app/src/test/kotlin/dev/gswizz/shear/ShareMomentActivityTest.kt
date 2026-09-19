@@ -67,7 +67,7 @@ class ShareMomentActivityTest {
         compose.mainClock.autoAdvance = false
         ActivityScenario.launch<ShareReceiverActivity>(share("see $dirty")).use { scenario ->
             compose.waitForIdle()
-            compose.onNodeWithText("Removed utm_source").assertExists()
+            compose.onNodeWithText("Sheared!").assertExists()
             assertNull(scenario.chooser())
             compose.mainClock.advanceTimeBy(Motion.CUT_MS + 200L)
             compose.waitForIdle()

@@ -81,7 +81,7 @@ class SettingsScreenTest {
         compose.setContent {
             SettingsScreen(state = SettingsUiState(preview = MomentStyle.CUT), callbacks = noop(), onBack = {})
         }
-        compose.onNodeWithText("Removed utm_source, fbclid").assertExists()
+        compose.onNodeWithText("Sheared!").assertExists()
     }
 
     @Test

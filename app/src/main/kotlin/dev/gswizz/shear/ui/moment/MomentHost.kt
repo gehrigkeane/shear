@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import dev.gswizz.shear.R
 import dev.gswizz.shear.data.MomentStyle
@@ -68,19 +67,13 @@ fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Uni
     }
 }
 
+/** One word for what happened; the scene shows the how. */
 @Composable
 private fun caption(summary: MomentSummary): String =
     when {
         summary.urlCount == 0 -> stringResource(R.string.status_no_urls)
         !summary.changed -> stringResource(R.string.status_unchanged)
-        summary.removedNames.isNotEmpty() -> {
-            val shown = summary.removedNames.take(MAX_NAMES)
-            val more = summary.removedNames.size - shown.size
-            val names = if (more > 0) shown.joinToString(", ") + " +$more" else shown.joinToString(", ")
-            stringResource(R.string.moment_removed, names)
-        }
-        else -> pluralStringResource(R.plurals.moment_cleaned, summary.urlCount, summary.urlCount)
+        else -> stringResource(R.string.moment_sheared)
     }
 
 private const val SCRIM_ALPHA = 0.6f
-private const val MAX_NAMES = 3
