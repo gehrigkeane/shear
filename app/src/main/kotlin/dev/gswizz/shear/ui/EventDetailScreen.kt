@@ -5,18 +5,23 @@
  */
 package dev.gswizz.shear.ui
 
+import android.content.ClipData
 import android.content.ComponentName
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,9 +31,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -53,6 +63,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed interface EventDetailUiState {
     data object Loading : EventDetailUiState
@@ -197,6 +208,13 @@ fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: M
 
 @Composable
 private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    val copy: (String, String) -> Unit = { label, text ->
+        scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(label, text))) }
+    }
+    val originalTitle = stringResource(R.string.detail_original)
+    val sharedTitle = stringResource(R.string.detail_cleaned)
     val time =
         event.timestamp
             .atZone(ZoneId.systemDefault())
@@ -219,16 +237,16 @@ private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
             }
         }
         item {
-            Section(title = stringResource(R.string.detail_original)) {
+            val original = event.originalText
+            Section(title = originalTitle, onCopy = original?.let { { copy(originalTitle, it) } }) {
                 Text(
-                    text =
-                        event.originalText ?: stringResource(R.string.detail_original_not_retained, event.originalHash),
+                    text = original ?: stringResource(R.string.detail_original_not_retained, event.originalHash),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
         item {
-            Section(title = stringResource(R.string.detail_cleaned)) {
+            Section(title = sharedTitle, onCopy = { copy(sharedTitle, event.cleanedText) }) {
                 Text(text = event.cleanedText, style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -245,11 +263,38 @@ private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
     }
 }
 
+/** A titled card. With [onCopy] the whole card is a tap target that copies, and the title row shows a copy glyph. */
 @Composable
-private fun Section(title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Card(modifier = modifier.fillMaxWidth()) {
+private fun Section(
+    title: String,
+    modifier: Modifier = Modifier,
+    onCopy: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    val tappable =
+        if (onCopy != null) {
+            Modifier.clip(CardDefaults.shape).clickable(onClickLabel = stringResource(R.string.copy), onClick = onCopy)
+        } else {
+            Modifier
+        }
+    Card(modifier = modifier.fillMaxWidth().then(tappable)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = title,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                if (onCopy != null) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_content_copy),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             content()
         }
     }

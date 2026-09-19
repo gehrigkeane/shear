@@ -5,12 +5,17 @@
  */
 package dev.gswizz.shear.ui
 
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import dev.gswizz.shear.data.ShareStatus
 import java.time.Instant
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,6 +69,35 @@ class EventDetailScreenTest {
             EventDetailScreen(state = EventDetailUiState.Loaded(event.copy(originalText = null)), onBack = {})
         }
         compose.onNodeWithText("Original not retained (hash abc)").assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping Shared copies the cleaned text`() {
+        compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(event), onBack = {}) }
+        compose.onNodeWithText("see https://dest.example/a?id=1").performClick()
+        assertEquals("see https://dest.example/a?id=1", clipboardText())
+    }
+
+    @Test
+    fun `tapping Original copies the original text`() {
+        compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(event), onBack = {}) }
+        compose.onNodeWithText("see https://go.example/r?u=x").performClick()
+        assertEquals("see https://go.example/r?u=x", clipboardText())
+    }
+
+    @Test
+    fun `a redacted original offers nothing to copy`() {
+        compose.setContent {
+            EventDetailScreen(state = EventDetailUiState.Loaded(event.copy(originalText = null)), onBack = {})
+        }
+        compose.onNodeWithText("Original not retained (hash abc)").assertHasNoClickAction()
+    }
+
+    private fun clipboardText(): String? {
+        compose.waitForIdle()
+        val manager =
+            ApplicationProvider.getApplicationContext<Context>().getSystemService(ClipboardManager::class.java)
+        return manager.primaryClip?.getItemAt(0)?.text?.toString()
     }
 
     @Test
