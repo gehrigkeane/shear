@@ -54,7 +54,7 @@ shear/
 
 ## Development Workflow
 
-`mise` owns the toolchain: JDK 21, the Android command-line tools, and the file linters.
+`mise` owns the toolchain: JDK 25, the Android command-line tools, and the file linters.
 Gradle runs through the wrapper.
 `ANDROID_HOME` and `JAVA_HOME` come from mise, so there is no `local.properties`.
 
