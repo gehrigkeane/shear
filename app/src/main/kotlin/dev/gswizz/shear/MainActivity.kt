@@ -5,23 +5,24 @@
  */
 package dev.gswizz.shear
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import dev.gswizz.shear.ui.EventDetailRoute
 import dev.gswizz.shear.ui.HistoryRoute
+import dev.gswizz.shear.ui.SettingsRoute
+import dev.gswizz.shear.ui.SettingsUiState
 import dev.gswizz.shear.ui.ShearTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -43,12 +44,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val graph = (application as ShearApplication).graph
         graph.appScope.launch { graph.history.pruneExpired() }
-        setContent { ShearTheme { ShearApp(graph = graph) } }
+        val appVersion = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+        setContent {
+            ShearTheme {
+                ShearApp(
+                    graph = graph,
+                    appVersion = appVersion,
+                    onOpenUpstream = { startActivity(Intent(Intent.ACTION_VIEW, SettingsUiState.UPSTREAM.toUri())) },
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun ShearApp(graph: AppGraph, modifier: Modifier = Modifier) {
+private fun ShearApp(graph: AppGraph, appVersion: String, onOpenUpstream: () -> Unit, modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(HistoryKey)
     NavDisplay(
         backStack = backStack,
@@ -65,14 +75,17 @@ private fun ShearApp(graph: AppGraph, modifier: Modifier = Modifier) {
                         onSettings = { backStack.add(SettingsKey) },
                     )
                 }
-                entry<EventDetailKey> { key -> Placeholder(text = key.eventId) }
-                entry<SettingsKey> { Placeholder(text = "Settings") }
+                entry<EventDetailKey> { key ->
+                    EventDetailRoute(graph = graph, eventId = key.eventId, onBack = { backStack.removeLastOrNull() })
+                }
+                entry<SettingsKey> {
+                    SettingsRoute(
+                        graph = graph,
+                        appVersion = appVersion,
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenUpstream = onOpenUpstream,
+                    )
+                }
             },
     )
-}
-
-/** Stands in for the detail and settings screens until they land. */
-@Composable
-private fun Placeholder(text: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(text = text) }
 }
