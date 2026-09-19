@@ -102,8 +102,12 @@ fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier
                     drawText(layout, color = color, topLeft = Offset(x, top))
                 }
             }
-            if (plan.wholesale && t > scene.sweepMs) {
-                val typed = ((t - scene.sweepMs) / (Motion.CUT_MS - scene.sweepMs)).coerceIn(0f, 1f)
+            if (plan.wholesale && t > scene.sweepEndMs) {
+                val typed =
+                    ((t - scene.sweepEndMs) / (Motion.CUT_MS - Motion.CUT_SETTLE_MS - scene.sweepEndMs)).coerceIn(
+                        0f,
+                        1f,
+                    )
                 val shown = plan.final.take((typed * plan.final.length).toInt())
                 drawText(measurer.measure(shown, line.style), color = flavor.text, topLeft = Offset(0f, top))
             }
@@ -114,7 +118,7 @@ fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier
                     size = Size(crumbs.size[i], crumbs.size[i]),
                 )
             }
-            if (t < scene.sweepMs) {
+            if (t < scene.sweepEndMs) {
                 val bx = scene.bladeX(t)
                 drawRect(
                     brush = Brush.verticalGradient(listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))),
@@ -162,7 +166,17 @@ private fun fit(plan: CutPlan, measurer: TextMeasurer, base: TextStyle, maxWidth
         layouts = segments.map { measurer.measure(it.text, style) }
     }
     val widths = layouts.map { it.size.width.toFloat() }
-    return FittedLine(style, layouts, CutScene(segments, widths, sweepMs = SWEEP_MS, slideMs = SLIDE_MS))
+    return FittedLine(
+        style,
+        layouts,
+        CutScene(
+            segments,
+            widths,
+            sweepMs = Motion.CUT_SWEEP_MS,
+            slideMs = Motion.CUT_SLIDE_MS,
+            holdMs = Motion.CUT_HOLD_MS,
+        ),
+    )
 }
 
 /**
@@ -205,8 +219,6 @@ private fun spawnCrumbs(field: PixelField, left: Float, width: Float, lineHeight
 
 private const val NANOS_PER_SECOND = 1_000_000_000f
 private const val NANOS_PER_MILLI = 1_000_000f
-private const val SWEEP_MS = 500
-private const val SLIDE_MS = 150
 private const val LINE_HEIGHT_DP = 20
 private const val LINES = 3
 private const val BLADE_DP = 2
@@ -219,6 +231,6 @@ private const val CRUMB_SPEED_DP = 60f
 private const val CRUMB_MIN_DP = 2f
 private const val CRUMB_MAX_DP = 4f
 private const val CRUMB_COLORS = 3
-private const val CRUMB_LIFE_S = 0.35f
-private const val GRAVITY_DP = 500f
+private const val CRUMB_LIFE_S = 0.6f
+private const val GRAVITY_DP = 350f
 private const val HALF = 0.5f

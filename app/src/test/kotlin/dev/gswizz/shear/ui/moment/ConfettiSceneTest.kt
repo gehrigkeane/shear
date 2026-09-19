@@ -26,13 +26,26 @@ class ConfettiSceneTest {
     @Test
     fun `the burst fires once when the pop lands`() {
         val scene = scene()
-        scene.frame(tMs = 100f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
+        scene.frame(tMs = ConfettiScene.POP_MS - 50f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
         assertEquals(0, scene.field.count)
-        scene.frame(tMs = 160f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
+        scene.frame(tMs = ConfettiScene.POP_MS + 10f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
         assertEquals(ConfettiScene.SQUARES, scene.field.count)
-        scene.frame(tMs = 180f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
+        scene.frame(tMs = ConfettiScene.POP_MS + 30f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
         assertEquals(ConfettiScene.SQUARES, scene.field.count)
         for (i in 0 until scene.field.count) assertTrue(scene.field.colorIndex[i] in 0 until 14)
+    }
+
+    @Test
+    fun `squares outlive the fade so none vanish early`() {
+        val scene = scene()
+        scene.frame(tMs = ConfettiScene.POP_MS + 10f, dtSeconds = 0.016f, originX = 50f, originY = 50f)
+        // Step to the end of the budget in frames; every square should still be alive when the fade completes.
+        var t = ConfettiScene.POP_MS + 10f
+        while (t < ConfettiScene.DURATION_MS) {
+            scene.frame(tMs = t, dtSeconds = 0.016f, originX = 50f, originY = 50f)
+            t += 16f
+        }
+        assertEquals(ConfettiScene.SQUARES, scene.field.count)
     }
 
     @Test
@@ -46,7 +59,7 @@ class ConfettiSceneTest {
     @Test
     fun `finished at the end of the budget`() {
         val scene = scene()
-        assertFalse(scene.finished(799f))
-        assertTrue(scene.finished(800f))
+        assertFalse(scene.finished(ConfettiScene.DURATION_MS - 1f))
+        assertTrue(scene.finished(ConfettiScene.DURATION_MS.toFloat()))
     }
 }

@@ -47,14 +47,16 @@ class ConfettiScene(random: Random, private val colorCount: Int, private val den
 
     companion object {
         const val DURATION_MS = Motion.CONFETTI_MS
-        const val POP_MS = 150
-        const val FADE_MS = 250
+        const val POP_MS = 250
+        const val FADE_MS = 350
         const val SQUARES = 120
         private const val START_SCALE = 0.8f
-        private const val SPEED_DP = 420f
-        private const val GRAVITY_DP = 900f
+        private const val SPEED_DP = 380f
+        private const val GRAVITY_DP = 700f
         private const val MIN_SIZE_DP = 3f
         private const val MAX_SIZE_DP = 6f
-        private const val LIFE_S = 0.75f
+
+        /** Longer than the budget after the pop, so the fade, not death, is what ends every square. */
+        private const val LIFE_S = 1.3f
     }
 }
