@@ -22,6 +22,8 @@ private constructor(
     public val matchSubdomains: Boolean,
     public val pathGlob: String,
     public val matchAllUrls: Boolean,
+    /** The pattern text exactly as it appeared in the rule file. */
+    public val raw: String,
 ) {
     public enum class Scheme {
         HTTP,
@@ -54,8 +56,7 @@ private constructor(
         return pathGlob.length > 2 && pathGlob.endsWith("/*") && target == pathGlob.substring(0, pathGlob.length - 2)
     }
 
-    override fun toString(): String =
-        if (matchAllUrls) ALL_URLS else "$scheme://${if (matchSubdomains) "*." else ""}$host$pathGlob"
+    override fun toString(): String = raw
 
     public companion object {
         private const val ALL_URLS = "<all_urls>"
@@ -63,7 +64,7 @@ private constructor(
 
         /** Parses [pattern], or returns null when it is not a valid http(s) match pattern. */
         public fun parse(pattern: String): MatchPattern? {
-            if (pattern == ALL_URLS) return MatchPattern(Scheme.ANY, "", true, "/*", matchAllUrls = true)
+            if (pattern == ALL_URLS) return MatchPattern(Scheme.ANY, "", true, "/*", matchAllUrls = true, raw = pattern)
             val m = shape.find(pattern) ?: return null
             val scheme =
                 when (m.groupValues[1]) {
@@ -81,7 +82,14 @@ private constructor(
                 }
             if (host.isEmpty() && rawHost != "*") return null
             if (host.contains('*')) return null
-            return MatchPattern(scheme, host.lowercase().removeSuffix("."), subdomains, glob, matchAllUrls = false)
+            return MatchPattern(
+                scheme,
+                host.lowercase().removeSuffix("."),
+                subdomains,
+                glob,
+                matchAllUrls = false,
+                raw = pattern,
+            )
         }
 
         /** Iterative glob match where `*` is the only wildcard; case-sensitive. */
