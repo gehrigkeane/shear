@@ -131,10 +131,11 @@ fun HistoryRoute(
     onOpen: (String) -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
     viewModel: HistoryViewModel = viewModel { HistoryViewModel(graph) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HistoryScreen(state = state, onOpen = onOpen, onSettings = onSettings, modifier = modifier)
+    HistoryScreen(state = state, onOpen = onOpen, onSettings = onSettings, modifier = modifier, shared = shared)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -144,6 +145,7 @@ fun HistoryScreen(
     onOpen: (String) -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
 ) {
     Scaffold(
         modifier = modifier,
@@ -172,7 +174,7 @@ fun HistoryScreen(
                         for (section in state.sections) {
                             stickyHeader(key = section.date.toString()) { DayHeader(date = section.date) }
                             items(section.rows, key = { it.id }) { row ->
-                                HistoryRowItem(row = row, onClick = { onOpen(row.id) })
+                                HistoryRowItem(row = row, onClick = { onOpen(row.id) }, shared = shared)
                             }
                         }
                     }
@@ -215,14 +217,30 @@ private fun DayHeader(date: LocalDate, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun HistoryRowItem(row: HistoryRow, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun HistoryRowItem(
+    row: HistoryRow,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    shared: SharedScopes? = null,
+) {
     val time = row.time.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
     ListItem(
-        headlineContent = { Text(text = row.summary.ifEmpty { stringResource(R.string.no_links) }) },
+        headlineContent = {
+            Text(
+                text = row.summary.ifEmpty { stringResource(R.string.no_links) },
+                modifier = Modifier.sharedBoundsIn(shared, "summary/${row.id}"),
+            )
+        },
         supportingContent = { Text(text = row.destination?.label ?: stringResource(R.string.destination_unknown)) },
         leadingContent = {
             val icon = row.destination?.icon
-            if (icon != null) Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(40.dp))
+            if (icon != null) {
+                Image(
+                    bitmap = icon,
+                    contentDescription = null,
+                    modifier = Modifier.sharedElementIn(shared, "icon/${row.id}").size(40.dp),
+                )
+            }
         },
         trailingContent = {
             Column(horizontalAlignment = Alignment.End) {

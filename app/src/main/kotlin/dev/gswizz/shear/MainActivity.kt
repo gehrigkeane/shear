@@ -10,6 +10,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
@@ -18,11 +21,13 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import dev.gswizz.shear.ui.EventDetailRoute
 import dev.gswizz.shear.ui.HistoryRoute
 import dev.gswizz.shear.ui.SettingsRoute
 import dev.gswizz.shear.ui.SettingsUiState
+import dev.gswizz.shear.ui.SharedScopes
 import dev.gswizz.shear.ui.ShearTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -57,35 +62,50 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** The navigation shell. A shared-transition layout wraps the display so a history row can glide into its details. */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ShearApp(graph: AppGraph, appVersion: String, onOpenUpstream: () -> Unit, modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(HistoryKey)
-    NavDisplay(
-        backStack = backStack,
-        modifier = modifier,
-        onBack = { backStack.removeLastOrNull() },
-        entryDecorators =
-            listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
-        entryProvider =
-            entryProvider {
-                entry<HistoryKey> {
-                    HistoryRoute(
-                        graph = graph,
-                        onOpen = { backStack.add(EventDetailKey(it)) },
-                        onSettings = { backStack.add(SettingsKey) },
-                    )
-                }
-                entry<EventDetailKey> { key ->
-                    EventDetailRoute(graph = graph, eventId = key.eventId, onBack = { backStack.removeLastOrNull() })
-                }
-                entry<SettingsKey> {
-                    SettingsRoute(
-                        graph = graph,
-                        appVersion = appVersion,
-                        onBack = { backStack.removeLastOrNull() },
-                        onOpenUpstream = onOpenUpstream,
-                    )
-                }
-            },
-    )
+    SharedTransitionLayout(modifier = modifier) {
+        NavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            entryDecorators =
+                listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
+            entryProvider =
+                entryProvider {
+                    entry<HistoryKey> {
+                        HistoryRoute(
+                            graph = graph,
+                            onOpen = { backStack.add(EventDetailKey(it)) },
+                            onSettings = { backStack.add(SettingsKey) },
+                            shared = sharedScopes(),
+                        )
+                    }
+                    entry<EventDetailKey> { key ->
+                        EventDetailRoute(
+                            graph = graph,
+                            eventId = key.eventId,
+                            onBack = { backStack.removeLastOrNull() },
+                            shared = sharedScopes(),
+                        )
+                    }
+                    entry<SettingsKey> {
+                        SettingsRoute(
+                            graph = graph,
+                            appVersion = appVersion,
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenUpstream = onOpenUpstream,
+                        )
+                    }
+                },
+        )
+    }
 }
+
+/** The scopes a screen's shared elements need: this layout and the current entry's animated visibility. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.sharedScopes(): SharedScopes =
+    SharedScopes(transition = this, visibility = LocalNavAnimatedContentScope.current)
