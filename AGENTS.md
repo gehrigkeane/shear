@@ -69,6 +69,12 @@ shear/
   When on, `OkHttpRedirectTransport` follows nothing itself, sends no cookies, credentials, or referrer,
   reads no bodies, and refuses non-public addresses at DNS time.
   Smart mode fetches only hosts in `core/src/main/resources/shear/opaque-redirectors.txt`.
+- **Catppuccin is the design system.**
+  `ui/theme/Catppuccin.kt` holds the only hex values in the app
+  (Mocha for dark, Latte for light);
+  `toColorScheme` maps them to Material 3 roles and `Brand` names the few tokens outside those roles,
+  such as the ink gradient the wordmark and launcher icon share.
+  New colors are roles or tokens, never literals.
 - **Native Sharesheet only.**
   Shear never renders or ranks destinations; the relay excludes Shear from its chooser.
   The one exception is `PinDemo`, a sharesheet opened from Settings or the first-run card that keeps Shear listed
