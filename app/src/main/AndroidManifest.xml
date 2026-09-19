@@ -4,6 +4,14 @@
     <!-- Only ever used for explicit, user-enabled redirect resolution. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Lets Shear resolve the label and icon of whatever app the user picked in the Sharesheet. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
     <!-- Share history is private and stays on this device; it is never backed up or transferred off it. -->
     <application
         android:name=".ShearApplication"
@@ -22,11 +30,12 @@
             </intent-filter>
         </activity>
 
-        <!-- The share target. Draws nothing itself; it relays to the native Sharesheet and finishes. -->
+        <!-- The share target. Translucent and usually invisible; it relays to the native Sharesheet and finishes. -->
         <activity
             android:name=".ShareReceiverActivity"
             android:exported="true"
             android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density|keyboardHidden"
             android:theme="@style/Theme.Shear.Relay">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -34,5 +43,10 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!-- Hears which app the user picked in the Sharesheet and attaches it to the history event. -->
+        <receiver
+            android:name=".ChosenComponentReceiver"
+            android:exported="false" />
     </application>
 </manifest>
