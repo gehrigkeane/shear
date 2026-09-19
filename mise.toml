@@ -77,20 +77,41 @@ run = ["./gradlew lint", "actionlint", "typos"]
 description = "Everything CI runs: format check, lint, test, build"
 depends = ["fmt-check", "lint", "test", "build"]
 
-# Brave's datasets are the only source of cleaning behavior. Snapshots are copied byte for byte from a pinned
-# upstream commit and never edited by hand; UPSTREAM records where they came from.
+# Brave's datasets are the only source of cleaning behavior. Snapshots are copied byte for byte from pinned upstream
+# commits and never edited by hand; UPSTREAM records where they came from. The conditional trackers live in C++ in
+# brave-core, so they are extracted from the source file into a small JSON object.
 [tasks.rules-update]
-description = "Refresh Brave clean-urls.json and debounce.json snapshots and record the upstream commit"
+description = "Refresh the Brave rule snapshots (clean-urls, debounce, query-filter, conditional trackers)"
 run = """
 set -euo pipefail
 dir=core/src/main/resources/brave
-sha=$(curl -fsSL https://api.github.com/repos/brave/adblock-lists/commits/master | sed -n 's/^  "sha": "\\(.*\\)",$/\\1/p')
-test -n "$sha"
-for f in clean-urls.json debounce.json; do
-  curl -fsSL "https://raw.githubusercontent.com/brave/adblock-lists/$sha/brave-lists/$f" -o "$dir/$f"
+lists=$(curl -fsSL https://api.github.com/repos/brave/adblock-lists/commits/master | sed -n 's/^  "sha": "\\(.*\\)",$/\\1/p')
+core=$(curl -fsSL https://api.github.com/repos/brave/brave-core/commits/master | sed -n 's/^  "sha": "\\(.*\\)",$/\\1/p')
+test -n "$lists" && test -n "$core"
+for f in clean-urls.json debounce.json query-filter.json; do
+  curl -fsSL "https://raw.githubusercontent.com/brave/adblock-lists/$lists/brave-lists/$f" -o "$dir/$f"
 done
-printf 'repo: https://github.com/brave/adblock-lists\\ncommit: %s\\nfetched: %s\\nlicense: MPL-2.0\\n' \\
-  "$sha" "$(date -u +%Y-%m-%d)" > "$dir/UPSTREAM"
+curl -fsSL "https://raw.githubusercontent.com/brave/brave-core/$core/components/query_filter/browser/utils.cc" \\
+  | sed -n '/kConditionalQueryStringTrackers/,/});/p' \\
+  | sed -n 's/^ *{"\\([A-Za-z0-9_]*\\)", "\\(.*\\)"},*$/\\1\t\\2/p' \\
+  | sort \\
+  | awk -F'\t' 'BEGIN { printf "{\\n" } { printf "%s  \\"%s\\": \\"%s\\"", (NR > 1 ? ",\\n" : ""), $1, $2 } END { printf "\\n}\\n" }' \\
+  > "$dir/conditional-trackers.json"
+grep -q '"mkt_tok"' "$dir/conditional-trackers.json"
+printf 'adblock-lists: https://github.com/brave/adblock-lists\\nadblock-lists-commit: %s\\nbrave-core: https://github.com/brave/brave-core\\nbrave-core-commit: %s\\nfetched: %s\\nlicense: MPL-2.0\\n' \\
+  "$lists" "$core" "$(date -u +%Y-%m-%d)" > "$dir/UPSTREAM"
+"""
+
+# Mozilla's Public Suffix List decides what "same site" means for debouncing, exactly as it does in Brave.
+[tasks.psl-update]
+description = "Refresh the Public Suffix List snapshot and record its checksum"
+run = """
+set -euo pipefail
+dir=core/src/main/resources/mozilla
+mkdir -p "$dir"
+curl -fsSL https://publicsuffix.org/list/public_suffix_list.dat -o "$dir/public_suffix_list.dat"
+printf 'source: https://publicsuffix.org/list/public_suffix_list.dat\\nfetched: %s\\nsha256: %s\\nlicense: MPL-2.0\\n' \\
+  "$(date -u +%Y-%m-%d)" "$(shasum -a 256 "$dir/public_suffix_list.dat" | cut -d' ' -f1)" > "$dir/UPSTREAM"
 """
 
 [tasks.clean]
