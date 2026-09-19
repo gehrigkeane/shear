@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -254,14 +255,17 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     }
 }
 
+/** A day's sticky header. It carries the surface color so rows scrolling beneath it do not show through. */
 @Composable
 private fun DayHeader(date: LocalDate, modifier: Modifier = Modifier) {
-    Text(
-        text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-    )
+    Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface) {
+        Text(
+            text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
 }
 
 @Composable
