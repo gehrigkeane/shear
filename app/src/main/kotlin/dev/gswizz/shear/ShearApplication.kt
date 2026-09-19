@@ -12,8 +12,10 @@ import dev.gswizz.shear.core.Shear
 import dev.gswizz.shear.core.TextResult
 import dev.gswizz.shear.core.net.OkHttpRedirectTransport
 import dev.gswizz.shear.core.net.ResolveMode
+import dev.gswizz.shear.data.HistoryRepository
 import dev.gswizz.shear.data.SettingsRepository
 import dev.gswizz.shear.data.SettingsStore
+import dev.gswizz.shear.data.ShearDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -56,6 +58,7 @@ class CoreEngine(private val shear: Shear) : ShearEngine {
  */
 class AppGraph(
     val settings: SettingsStore,
+    val history: HistoryRepository,
     private val engineLoader: Deferred<ShearEngine>,
     val appScope: CoroutineScope,
     val defaultDispatcher: CoroutineDispatcher,
@@ -68,8 +71,10 @@ class AppGraph(
         fun create(app: Application): AppGraph {
             val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
             val engine = appScope.async(Dispatchers.Default) { CoreEngine(Shear.default(OkHttpRedirectTransport())) }
+            val settings = SettingsRepository(app.settingsDataStore)
             return AppGraph(
-                settings = SettingsRepository(app.settingsDataStore),
+                settings = settings,
+                history = HistoryRepository(ShearDatabase.create(app).dao(), settings, appScope),
                 engineLoader = engine,
                 appScope = appScope,
                 defaultDispatcher = Dispatchers.Default,
