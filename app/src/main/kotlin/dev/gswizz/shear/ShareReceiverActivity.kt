@@ -33,6 +33,7 @@ import dev.gswizz.shear.core.TextResult
 import dev.gswizz.shear.core.net.ResolveMode
 import dev.gswizz.shear.data.Settings
 import dev.gswizz.shear.data.ShareStatus
+import dev.gswizz.shear.ui.theme.ShearTheme
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -100,7 +101,7 @@ class ShareReceiverActivity : ComponentActivity() {
         }
         inFlight = InFlight(offline, settings)
         isResolving = true
-        setContent { MaterialTheme { ResolvingOverlay(onCancel = ::cancelResolution) } }
+        setContent { ShearTheme { ResolvingOverlay(onCancel = ::cancelResolution) } }
         val resolved =
             withTimeoutOrNull(RESOLUTION_BUDGET_MS) {
                 val job = async(graph.defaultDispatcher) { engine.process(text, mode) }

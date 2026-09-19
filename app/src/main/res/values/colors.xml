@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Catppuccin Mocha, matching ui/theme/Catppuccin.kt: the launcher icon cannot follow the flavor, so it is always Mocha. -->
 <resources>
     <color name="ic_launcher_background">#1E1E2E</color>
 </resources>

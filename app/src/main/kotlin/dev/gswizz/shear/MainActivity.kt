@@ -28,7 +28,7 @@ import dev.gswizz.shear.ui.HistoryRoute
 import dev.gswizz.shear.ui.SettingsRoute
 import dev.gswizz.shear.ui.SettingsUiState
 import dev.gswizz.shear.ui.SharedScopes
-import dev.gswizz.shear.ui.ShearTheme
+import dev.gswizz.shear.ui.theme.ShearTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 

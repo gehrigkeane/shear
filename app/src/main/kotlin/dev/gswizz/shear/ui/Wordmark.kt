@@ -6,11 +6,9 @@
 package dev.gswizz.shear.ui
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -24,6 +22,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import dev.gswizz.shear.R
+import dev.gswizz.shear.ui.theme.Brand
+import dev.gswizz.shear.ui.theme.Motion
+import dev.gswizz.shear.ui.theme.shearFlavor
 
 /**
  * The SHEAR wordmark as ANSI-Shadow box-drawing art.
@@ -107,11 +108,11 @@ class WordmarkGrid(val columns: Int, val rows: Int, val cells: List<Cell>) {
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
-    val scheme = MaterialTheme.colorScheme
-    val inkColors = listOf(scheme.primary, scheme.tertiary)
-    val shadow = scheme.outline.copy(alpha = SHADOW_ALPHA)
+    val flavor = shearFlavor()
+    val inkColors = listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))
+    val shadow = Brand.shadow(flavor).copy(alpha = SHADOW_ALPHA)
     val reveal = remember { Animatable(0f) }
-    LaunchedEffect(Unit) { reveal.animateTo(1f, tween(REVEAL_MS, easing = FastOutSlowInEasing)) }
+    LaunchedEffect(Unit) { reveal.animateTo(1f, tween(Motion.REVEAL_MS, easing = Motion.Easing)) }
     val name = stringResource(R.string.app_name)
     Canvas(
         modifier =
@@ -156,4 +157,3 @@ private fun Path.addShadow(segments: Set<Segment>, origin: Offset, cell: Size) {
 private const val SHADOW_ALPHA = 0.55f
 /** Shadow bar thickness as a fraction of the cell. */
 private const val SHADOW_WEIGHT = 0.3f
-private const val REVEAL_MS = 500
