@@ -74,8 +74,8 @@ mise run ci           # the gate
 | `install`      | Install the debug APK on the connected device                    |
 | `run`          | Install and launch the app                                       |
 | `test`         | Unit tests in all modules                                        |
-| `fmt`          | Format markdown and TOML in place                                |
-| `fmt-check`    | Verify formatting without writing                                |
+| `fmt`          | Format Kotlin, Gradle scripts, XML, markdown, and TOML in place  |
+| `fmt-check`    | Verify formatting and license headers without writing            |
 | `lint`         | Android Lint, workflow lint, spelling                            |
 | `ci`           | `fmt-check` + `lint` + `test` + `build`; identical to CI         |
 | `clean`        | Remove Gradle build outputs                                      |

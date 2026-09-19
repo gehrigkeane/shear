@@ -55,12 +55,12 @@ run = "./gradlew test"
 # `fmt` mutates; `fmt-check` and `lint` only verify. Deliberately no task depends on `fmt`: a gate that silently
 # fixes the thing it checks cannot fail.
 [tasks.fmt]
-description = "Format markdown and TOML"
-run = ["rumdl check --fix .", "taplo fmt"]
+description = "Format Kotlin, Gradle scripts, XML, markdown, and TOML"
+run = ["./gradlew spotlessApply", "rumdl check --fix .", "taplo fmt"]
 
 [tasks.fmt-check]
-description = "Check formatting without writing"
-run = ["rumdl check .", "taplo fmt --check"]
+description = "Check formatting and license headers without writing"
+run = ["./gradlew spotlessCheck", "rumdl check .", "taplo fmt --check"]
 
 [tasks.lint]
 description = "Android Lint, workflow lint, spelling"
