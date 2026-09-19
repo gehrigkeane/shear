@@ -5,6 +5,7 @@
  */
 package dev.gswizz.shear
 
+import android.animation.ValueAnimator
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
@@ -31,8 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import dev.gswizz.shear.core.TextResult
 import dev.gswizz.shear.core.net.ResolveMode
+import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
 import dev.gswizz.shear.data.ShareStatus
+import dev.gswizz.shear.ui.moment.MomentHost
+import dev.gswizz.shear.ui.moment.MomentSummary
 import dev.gswizz.shear.ui.theme.ShearTheme
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
@@ -53,6 +57,10 @@ import kotlinx.coroutines.withTimeoutOrNull
  * mid-resolution records a cancelled event and shares nothing, since launching the chooser from the background is not
  * permitted. The event id is allocated up front and travels inside the chooser callback so the chosen destination can
  * be attached later, and Shear excludes itself from the chooser so a user cannot loop.
+ *
+ * Between the result and the chooser, unless turned off, a share moment plays: a short scene over the dimmed source app
+ * that shows what happened, so the second sharesheet does not arrive unexplained. Back skips it. Leaving during it is
+ * treated like leaving during resolution.
  */
 class ShareReceiverActivity : ComponentActivity() {
     private lateinit var graph: AppGraph
@@ -67,7 +75,10 @@ class ShareReceiverActivity : ComponentActivity() {
     internal var isResolving: Boolean = false
         private set
 
-    private class InFlight(val offline: TextResult, val settings: Settings)
+    /** True while a share moment is on screen and the chooser has not been launched. */
+    private var presenting: Boolean = false
+
+    private class InFlight(val result: TextResult, val settings: Settings)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +107,7 @@ class ShareReceiverActivity : ComponentActivity() {
         val offline = withContext(graph.defaultDispatcher) { engine.clean(text) }
         val mode = settings.redirectMode
         if (mode == ResolveMode.OFF || !engine.needsNetwork(text, mode)) {
-            share(offline, statusOf(offline), settings)
+            present(offline, statusOf(offline), settings)
             return
         }
         inFlight = InFlight(offline, settings)
@@ -116,11 +127,11 @@ class ShareReceiverActivity : ComponentActivity() {
         isResolving = false
         inFlight = null
         if (resolved == null) {
-            share(offline, ShareStatus.RESOLUTION_INCOMPLETE, settings)
+            present(offline, ShareStatus.RESOLUTION_INCOMPLETE, settings)
         } else {
             val status =
                 if (resolved.urls.any { it.failure != null }) ShareStatus.RESOLUTION_INCOMPLETE else statusOf(resolved)
-            share(resolved, status, settings)
+            present(resolved, status, settings)
         }
     }
 
@@ -132,13 +143,42 @@ class ShareReceiverActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         val pending = inFlight
-        if (isResolving && !isFinishing && pending != null) {
+        if ((isResolving || presenting) && !isFinishing && pending != null) {
             isResolving = false
+            presenting = false
             inFlight = null
             mainJob?.cancel()
-            graph.history.record(eventId, text, pending.offline, ShareStatus.CANCELLED, pending.settings)
+            graph.history.record(eventId, text, pending.result, ShareStatus.CANCELLED, pending.settings)
             finish()
         }
+    }
+
+    /** Plays the share moment before [share], or goes straight there when it is off or animations are disabled. */
+    private fun present(result: TextResult, status: ShareStatus, settings: Settings) {
+        val style = settings.moment
+        if (style == MomentStyle.OFF || !ValueAnimator.areAnimatorsEnabled()) {
+            share(result, status, settings)
+            return
+        }
+        inFlight = InFlight(result, settings)
+        presenting = true
+        setContent {
+            ShearTheme {
+                MomentHost(
+                    style = style,
+                    summary = MomentSummary.of(result),
+                    onFinished = { finishMoment(result, status, settings) },
+                )
+            }
+        }
+    }
+
+    /** Ends the moment once, whether the scene ran out or the user pressed back. */
+    private fun finishMoment(result: TextResult, status: ShareStatus, settings: Settings) {
+        if (!presenting) return
+        presenting = false
+        inFlight = null
+        share(result, status, settings)
     }
 
     private fun share(result: TextResult, status: ShareStatus, settings: Settings) {

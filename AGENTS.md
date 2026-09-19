@@ -47,6 +47,7 @@ shear/
 | `data.HistoryRepository`  | Room-backed history with retention and redaction on one ordered worker                        |
 | `data.SettingsRepository` | DataStore Preferences: redirect mode, retention, retain originals                              |
 | `ui.*Screen`              | One file per screen: ViewModel, `*Route` (collects state), stateless `*Screen`                 |
+| `ui.moment.*`             | The share moment: `MomentHost` scrim and caption, one `*Moment` scene per style, pure `*Scene` timelines, `PixelField`, `CutPlan` |
 
 ## Key Design Decisions
 

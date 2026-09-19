@@ -25,7 +25,11 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
    The pipeline repeats until the link stops changing, so cleaning an already clean link changes nothing.
 3. If you have turned on redirect resolution, opaque short links are followed over the network, one hop at a time,
    with every hop cleaned before it is fetched.
-4. Android's Sharesheet opens with the cleaned text, and whichever app you choose is noted in Shear's history.
+4. A share moment plays for well under a second: by default The Cut,
+   which shows the tracking tail being sheared off the link.
+   Settings offers Confetti and Typewriter instead, or Off for a straight handoff;
+   it also steps aside when the system has animations turned off, and Back skips it.
+5. Android's Sharesheet opens with the cleaned text, and whichever app you choose is noted in Shear's history.
 
 Anything that is not a link is untouched, byte for byte.
 A link that Shear cannot clean is passed through exactly as you shared it.

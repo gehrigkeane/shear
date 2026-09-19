@@ -45,6 +45,11 @@
     <string name="settings_redirects_all_desc">Follow redirects for every link over the network</string>
     <string name="settings_redirects_disclosure">Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer.</string>
     <string name="settings_moment">Share moment</string>
+    <string name="moment_removed">Removed %1$s</string>
+    <plurals name="moment_cleaned">
+        <item quantity="one">Cleaned %d link</item>
+        <item quantity="other">Cleaned %d links</item>
+    </plurals>
     <string name="moment_off">Off</string>
     <string name="moment_off_desc">Straight to the share sheet</string>
     <string name="moment_cut">The Cut</string>

@@ -9,6 +9,8 @@ import android.content.ComponentName
 import android.content.Intent
 import android.text.SpannableString
 import androidx.test.core.app.ApplicationProvider
+import dev.gswizz.shear.data.MomentStyle
+import dev.gswizz.shear.data.Settings
 import dev.gswizz.shear.data.ShareStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,6 +48,9 @@ class ShareReceiverActivityTest {
             subject?.let { intent.putExtra(Intent.EXTRA_SUBJECT, it) }
         }
 
+    /** These flows cover the relay itself; the share moment has its own test class, so it stays off here. */
+    private fun install(engine: FakeEngine) = TestGraph.install(engine, Settings(moment = MomentStyle.OFF))
+
     private fun launch(intent: Intent): ShareReceiverActivity {
         val controller = Robolectric.buildActivity(ShareReceiverActivity::class.java, intent).setup()
         shadowOf(android.os.Looper.getMainLooper()).idle()
@@ -58,7 +63,7 @@ class ShareReceiverActivityTest {
 
     @Test
     fun `cleans the text and relays it to the sharesheet with a callback and itself excluded`() {
-        val installed = TestGraph.install(FakeEngine.replacing(dirty, clean))
+        val installed = install(FakeEngine.replacing(dirty, clean))
         val activity = launch(share("see $dirty now", subject = "Subject"))
         val chooser = shadowOf(activity).nextStartedActivity
         assertNotNull(chooser)
@@ -84,7 +89,7 @@ class ShareReceiverActivityTest {
 
     @Test
     fun `spannable text from browsers is accepted`() {
-        TestGraph.install(FakeEngine.replacing(dirty, clean))
+        install(FakeEngine.replacing(dirty, clean))
         val activity = launch(share(SpannableString("bold $dirty")))
         val relay = shadowOf(activity).nextStartedActivity.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)!!
         assertEquals("bold $clean", relay.getStringExtra(Intent.EXTRA_TEXT))
@@ -92,7 +97,7 @@ class ShareReceiverActivityTest {
 
     @Test
     fun `without text nothing is shared and the activity finishes`() {
-        val installed = TestGraph.install(FakeEngine.replacing(dirty, clean))
+        val installed = install(FakeEngine.replacing(dirty, clean))
         val activity = launch(share(null))
         assertNull(shadowOf(activity).nextStartedActivity)
         assertTrue(activity.isFinishing)
@@ -101,7 +106,7 @@ class ShareReceiverActivityTest {
 
     @Test
     fun `unhealthy rules forward the original text and say so`() {
-        val installed = TestGraph.install(FakeEngine.replacing(dirty, clean, healthy = false))
+        val installed = install(FakeEngine.replacing(dirty, clean, healthy = false))
         val activity = launch(share("see $dirty"))
         val relay = shadowOf(activity).nextStartedActivity.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)!!
         assertEquals("see $dirty", relay.getStringExtra(Intent.EXTRA_TEXT))
@@ -114,10 +119,10 @@ class ShareReceiverActivityTest {
 
     @Test
     fun `status distinguishes no urls from unchanged urls`() {
-        val none = TestGraph.install(FakeEngine.noUrls())
+        val none = install(FakeEngine.noUrls())
         launch(share("no links"))
         assertEquals(ShareStatus.NO_URLS, awaitEvent(none).status)
-        val same = TestGraph.install(FakeEngine.replacing(dirty, dirty))
+        val same = install(FakeEngine.replacing(dirty, dirty))
         launch(share("see $dirty"))
         assertEquals(ShareStatus.UNCHANGED, awaitEvent(same).status)
     }
