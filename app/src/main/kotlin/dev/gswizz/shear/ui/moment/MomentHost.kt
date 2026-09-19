@@ -49,9 +49,9 @@ fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Uni
                 verticalArrangement = Arrangement.spacedBy(Spacing.m),
             ) {
                 when (style) {
-                    // Confetti and Typewriter arrive in their own changes; until then every style plays The Cut.
+                    MomentStyle.CONFETTI -> ConfettiMoment(summary = summary, onFinished = onFinished)
+                    // Typewriter arrives in its own change; until then it plays The Cut.
                     MomentStyle.CUT,
-                    MomentStyle.CONFETTI,
                     MomentStyle.TYPEWRITER -> CutMoment(summary = summary, onFinished = onFinished)
                     MomentStyle.OFF -> onFinished()
                 }

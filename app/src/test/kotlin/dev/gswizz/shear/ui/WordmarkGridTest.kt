@@ -41,6 +41,15 @@ class WordmarkGridTest {
     }
 
     @Test
+    fun `cropping keeps the first columns and drops the rest`() {
+        val s = WordmarkGrid.parse(WORDMARK).crop(8)
+        assertEquals(8, s.columns)
+        assertEquals(6, s.rows)
+        assertTrue(s.cells.all { it.column < 8 })
+        assertEquals(WordmarkGrid.parse(WORDMARK).cells.count { it.column < 8 }, s.cells.size)
+    }
+
+    @Test
     fun `an unsupported glyph is rejected`() {
         assertThrows(IllegalArgumentException::class.java) { WordmarkGrid.parse("█x") }
     }

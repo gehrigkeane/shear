@@ -17,7 +17,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -66,6 +68,9 @@ data class Cell(val column: Int, val row: Int, val segments: Set<Segment>) {
  * can be painted with any brush. Rows shorter than the widest are treated as padded with spaces.
  */
 class WordmarkGrid(val columns: Int, val rows: Int, val cells: List<Cell>) {
+    /** The leftmost [columns] columns, for example the first letter. */
+    fun crop(columns: Int): WordmarkGrid = WordmarkGrid(columns, rows, cells.filter { it.column < columns })
+
     companion object {
         private val SHAPES: Map<Char, Set<Segment>> =
             mapOf(
@@ -122,17 +127,33 @@ fun Wordmark(modifier: Modifier = Modifier) {
     ) {
         val cell = Size(size.width / grid.columns, size.height / grid.rows)
         val limit = reveal.value * (grid.columns + grid.rows)
-        // One path per group: adjacent rectangles filled separately leave anti-aliased seams at fractional edges.
-        val ink = Path()
-        val shadowBars = Path()
-        for (c in grid.cells) {
-            if (c.column + c.row >= limit) continue
-            val origin = Offset(c.column * cell.width, c.row * cell.height)
-            if (c.ink) ink.addRect(Rect(origin, cell)) else shadowBars.addShadow(c.segments, origin, cell)
+        drawGrid(
+            grid = grid,
+            cell = cell,
+            ink = Brush.horizontalGradient(inkColors, startX = 0f, endX = size.width),
+            shadow = shadow,
+        ) {
+            it.column + it.row < limit
         }
-        drawPath(ink, Brush.horizontalGradient(inkColors, startX = 0f, endX = size.width))
-        drawPath(shadowBars, shadow)
     }
+}
+
+/**
+ * Paints the [visible] cells of [grid] at [cell] size from the current origin: solid cells with [ink], box-drawing
+ * cells as [shadow] bars.
+ *
+ * One path per group, because adjacent rectangles filled separately leave anti-aliased seams at fractional edges.
+ */
+fun DrawScope.drawGrid(grid: WordmarkGrid, cell: Size, ink: Brush, shadow: Color, visible: (Cell) -> Boolean) {
+    val inkPath = Path()
+    val shadowBars = Path()
+    for (c in grid.cells) {
+        if (!visible(c)) continue
+        val origin = Offset(c.column * cell.width, c.row * cell.height)
+        if (c.ink) inkPath.addRect(Rect(origin, cell)) else shadowBars.addShadow(c.segments, origin, cell)
+    }
+    drawPath(inkPath, ink)
+    drawPath(shadowBars, shadow)
 }
 
 /** Adds thin bars from the cell center to the edges named by [segments]. */
