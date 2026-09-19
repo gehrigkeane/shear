@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer: only the S's solid blocks, in one color the launcher tints. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M28,34.5h6.5v6.5h-6.5zM34.5,34.5h6.5v6.5h-6.5zM41,34.5h6.5v6.5h-6.5zM47.5,34.5h6.5v6.5h-6.5z
+        M54,34.5h6.5v6.5h-6.5zM60.5,34.5h6.5v6.5h-6.5zM67,34.5h6.5v6.5h-6.5zM28,41h6.5v6.5h-6.5z
+        M34.5,41h6.5v6.5h-6.5zM28,47.5h6.5v6.5h-6.5zM34.5,47.5h6.5v6.5h-6.5zM41,47.5h6.5v6.5h-6.5z
+        M47.5,47.5h6.5v6.5h-6.5zM54,47.5h6.5v6.5h-6.5zM60.5,47.5h6.5v6.5h-6.5zM67,47.5h6.5v6.5h-6.5z
+        M60.5,54h6.5v6.5h-6.5zM67,54h6.5v6.5h-6.5zM28,60.5h6.5v6.5h-6.5zM34.5,60.5h6.5v6.5h-6.5z
+        M41,60.5h6.5v6.5h-6.5zM47.5,60.5h6.5v6.5h-6.5zM54,60.5h6.5v6.5h-6.5zM60.5,60.5h6.5v6.5h-6.5z
+        M67,60.5h6.5v6.5h-6.5z" />
+</vector>
