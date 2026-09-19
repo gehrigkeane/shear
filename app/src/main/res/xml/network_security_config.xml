@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Redirect resolution must be able to fetch plain-http links, because many redirectors only answer over http and the
+  resolver never rewrites the scheme the user shared. The user opts into this traffic in Settings, it is the only
+  network access Shear has, and TLS verification for https stays at the platform default. Lint's objection is the
+  point: this is a deliberate, documented exception.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration" />
+</network-security-config>
