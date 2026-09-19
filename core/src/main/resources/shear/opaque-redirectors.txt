@@ -1,0 +1,30 @@
+# Hosts whose links reveal nothing about their destination, so Smart mode resolves them over the network.
+# One host per line; a host also covers its subdomains. Security interstitials (l.facebook.com, google.com/url)
+# are deliberately absent: Brave excludes them and so does Shear.
+a.co
+amzn.to
+apple.co
+bit.do
+bit.ly
+buff.ly
+cutt.ly
+dlvr.it
+ffm.to
+goo.gl
+is.gd
+lnk.to
+lnkd.in
+msft.it
+ow.ly
+rb.gy
+redd.it
+s.id
+shorturl.at
+smarturl.it
+spoti.fi
+t.co
+t.ly
+tiny.cc
+tinyurl.com
+trib.al
+v.gd
