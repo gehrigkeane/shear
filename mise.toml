@@ -25,15 +25,22 @@ description = "Install the emulator and the arm64 API 37 system image (local onl
 depends = ["sdk"]
 run = "yes | android sdk install emulator system-images/android-37.0/google_apis/arm64-v8a"
 
+# `android emulator create` only takes a device profile and picks its own system image, so creation stays on
+# avdmanager, which pins the API 37 image. Start and stop go through the `android` CLI, which blocks until the device
+# is actually ready or gone.
 [tasks.avd]
 description = "Create the 'shear' AVD if missing"
 depends = ["sdk-emulator"]
 run = "avdmanager list avd | grep -q 'Name: shear' || avdmanager create avd -n shear -d pixel_8 -k 'system-images;android-37.0;google_apis;arm64-v8a'"
 
 [tasks.emulator]
-description = "Boot the 'shear' AVD"
+description = "Boot the 'shear' AVD and return once it is ready"
 depends = ["avd"]
-run = "emulator -avd shear"
+run = "android emulator start shear"
+
+[tasks.emulator-stop]
+description = "Shut down the 'shear' AVD"
+run = "android emulator stop shear"
 
 [tasks.build]
 description = "Assemble the debug APK"
