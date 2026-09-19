@@ -37,7 +37,7 @@ android {
 
 // Registered by AGP's built-in Kotlin; compilerOptions lives at top level and kotlinOptions is gone.
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
     compilerOptions { allWarningsAsErrors = true }
 }
 

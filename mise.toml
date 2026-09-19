@@ -3,8 +3,8 @@
 jobs = 1
 
 [tools]
-# AGP 9 requires JDK 17+; 21 is the LTS the Android toolchain targets. mise exports JAVA_HOME, which Gradle honors.
-java = "temurin-21"
+# AGP 9 requires JDK 17+; 25 is the current LTS and Gradle 9.1+ runs on it. mise exports JAVA_HOME, which Gradle honors.
+java = "temurin-25"
 # Android command-line tools. The plugin exports ANDROID_HOME and puts sdkmanager, adb, and emulator on PATH, so
 # Gradle needs no local.properties. `mise run sdk` installs the platform pieces a build needs.
 android-sdk = "23.0"
