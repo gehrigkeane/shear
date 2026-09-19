@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import dev.gswizz.shear.core.net.ResolveMode
+import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.data.Settings
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -24,7 +25,7 @@ import org.robolectric.annotation.GraphicsMode
 class SettingsScreenTest {
     @get:Rule val compose = createComposeRule()
 
-    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {})
+    private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {}, {})
 
     private val disclosure =
         "Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer."
@@ -51,6 +52,16 @@ class SettingsScreenTest {
             )
         }
         compose.onNodeWithText(disclosure).assertIsDisplayed()
+    }
+
+    @Test
+    fun `choosing a share moment calls back with the style`() {
+        var chosen: MomentStyle? = null
+        compose.setContent {
+            SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onMoment = { chosen = it }), onBack = {})
+        }
+        compose.onNodeWithText("Confetti").performScrollTo().performClick()
+        assertEquals(MomentStyle.CONFETTI, chosen)
     }
 
     @Test
