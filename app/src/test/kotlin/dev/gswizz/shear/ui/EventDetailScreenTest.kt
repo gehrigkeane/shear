@@ -9,6 +9,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -34,6 +35,7 @@ class EventDetailScreenTest {
             originalText = "see https://go.example/r?u=x",
             originalHash = "abc",
             cleanedText = "see https://dest.example/a?id=1",
+            summary = "dest.example",
             status = ShareStatus.CLEANED,
             rulesVersion = "c304773bcacaa22171b93f818321d89657d9f55e",
             destination = DestinationUi("Messages", "com.messages/.Share", null),
@@ -56,7 +58,9 @@ class EventDetailScreenTest {
         compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(event), onBack = {}) }
         compose.onNodeWithText("see https://go.example/r?u=x").assertIsDisplayed()
         compose.onNodeWithText("see https://dest.example/a?id=1").assertIsDisplayed()
-        compose.onNodeWithText("Sent to Messages").assertIsDisplayed()
+        // The header mirrors the history row: hosts as the title, time and destination beneath.
+        compose.onNodeWithText("dest.example").assertIsDisplayed()
+        compose.onNode(hasText(" · Messages", substring = true)).assertIsDisplayed()
         compose.onNodeWithText("Cleaned").assertIsDisplayed().assertHasNoClickAction()
         // Robolectric's default viewport is short; the trace card is composed but scrolled out of view.
         compose.onNodeWithText("clean-urls rule #44").assertExists()

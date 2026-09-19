@@ -44,8 +44,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.gswizz.shear.AppGraph
 import dev.gswizz.shear.R
-import dev.gswizz.shear.core.UrlExtractor
-import dev.gswizz.shear.core.url.UrlParts
 import dev.gswizz.shear.data.DestinationResolver
 import dev.gswizz.shear.data.HistoryRetention
 import dev.gswizz.shear.data.ShareEventEntity
@@ -107,7 +105,7 @@ class HistoryViewModel(graph: AppGraph) : ViewModel() {
             .sortedByDescending { it.date }
 
     private fun ShareEventEntity.toRow(destinations: DestinationResolver): HistoryRow {
-        val hosts = UrlExtractor.extract(cleanedText).mapNotNull { UrlParts.parse(it.url)?.hostLower }
+        val summary = ShareSummary.of(cleanedText)
         val component = destinationComponent?.let(ComponentName::unflattenFromString)
         val destination =
             if (component != null) {
@@ -119,14 +117,7 @@ class HistoryViewModel(graph: AppGraph) : ViewModel() {
             } else {
                 null
             }
-        return HistoryRow(
-            id,
-            Instant.ofEpochMilli(timestamp),
-            hosts.distinct().joinToString(", "),
-            hosts.size,
-            destination,
-            status,
-        )
+        return HistoryRow(id, Instant.ofEpochMilli(timestamp), summary.hosts, summary.urlCount, destination, status)
     }
 
     private companion object {

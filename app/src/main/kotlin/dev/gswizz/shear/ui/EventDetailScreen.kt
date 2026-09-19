@@ -7,6 +7,7 @@ package dev.gswizz.shear.ui
 
 import android.content.ClipData
 import android.content.ComponentName
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,6 +81,8 @@ data class EventDetail(
     val originalText: String?,
     val originalHash: String,
     val cleanedText: String,
+    /** Hosts of the cleaned links; empty when there were none. */
+    val summary: String,
     val status: ShareStatus,
     val rulesVersion: String,
     val destination: DestinationUi?,
@@ -113,6 +117,7 @@ class EventDetailViewModel(graph: AppGraph, eventId: String) : ViewModel() {
             originalText = event.originalText,
             originalHash = event.originalHash,
             cleanedText = event.cleanedText,
+            summary = ShareSummary.of(event.cleanedText).hosts,
             status = event.status,
             rulesVersion = event.rulesVersion,
             destination =
@@ -176,20 +181,23 @@ fun EventDetailRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val event = (state as? EventDetailUiState.Loaded)?.event
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.detail_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-            )
+            val back: @Composable () -> Unit = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                    )
+                }
+            }
+            if (event == null) {
+                TopAppBar(title = { Text(text = stringResource(R.string.detail_title)) }, navigationIcon = back)
+            } else {
+                EventHeader(event = event, navigationIcon = back)
+            }
         },
     ) { padding ->
         when (state) {
@@ -206,6 +214,46 @@ fun EventDetailScreen(state: EventDetailUiState, onBack: () -> Unit, modifier: M
     }
 }
 
+/**
+ * The history row again, as an app bar: hosts for the title, time and destination beneath, the app's icon at the end.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EventHeader(event: EventDetail, navigationIcon: @Composable () -> Unit, modifier: Modifier = Modifier) {
+    val time =
+        event.timestamp
+            .atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT))
+    val destination = event.destination?.label ?: stringResource(R.string.destination_unknown)
+    TopAppBar(
+        title = {
+            Column {
+                Text(
+                    text = event.summary.ifEmpty { stringResource(R.string.no_links) },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = "$time · $destination",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        modifier = modifier,
+        navigationIcon = navigationIcon,
+        actions = {
+            val icon = event.destination?.icon
+            if (icon != null) {
+                Image(bitmap = icon, contentDescription = null, modifier = Modifier.padding(end = 16.dp).size(32.dp))
+            }
+        },
+    )
+}
+
 @Composable
 private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
     val clipboard = LocalClipboard.current
@@ -215,27 +263,12 @@ private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
     }
     val originalTitle = stringResource(R.string.detail_original)
     val sharedTitle = stringResource(R.string.detail_cleaned)
-    val time =
-        event.timestamp
-            .atZone(ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT))
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text = time, style = MaterialTheme.typography.labelLarge)
-                StatusBadge(status = event.status)
-                Text(
-                    text =
-                        event.destination?.let { stringResource(R.string.detail_destination, it.label) }
-                            ?: stringResource(R.string.destination_unknown),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
+        item { StatusBadge(status = event.status) }
         item {
             val original = event.originalText
             Section(title = originalTitle, onCopy = original?.let { { copy(originalTitle, it) } }) {
