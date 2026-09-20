@@ -5,17 +5,10 @@
  */
 package dev.gswizz.shear.ui
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -34,9 +27,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import dev.gswizz.shear.R
 import dev.gswizz.shear.ui.theme.Brand
-import dev.gswizz.shear.ui.theme.Motion
 import dev.gswizz.shear.ui.theme.shearFlavor
-import kotlin.math.ceil
 
 /**
  * The SHEAR wordmark as ANSI-Shadow box-drawing art.
@@ -114,25 +105,19 @@ class WordmarkGrid(val columns: Int, val rows: Int, val cells: List<Cell>) {
 
 /**
  * The shear line across the wordmark: a column boundary, so once the wordmark leans it runs parallel to the stems, and
- * at rest it splits the A between its third and fourth ink columns. Ink left of it is solid; ink right of it is a
- * hollow outline in skin over a faint shadow.
+ * it splits the A between its third and fourth ink columns. Ink left of it is solid; ink right of it is a hollow
+ * outline in skin over a faint shadow.
  *
  * The A is the letter just past the golden-ratio point of the word, so the cut reads as an action caught mid-letter
- * rather than a two-tone split between letters. Snapping to whole columns keeps the line on the grid while it moves.
+ * rather than a two-tone split between letters.
  */
 class WordmarkCut(val column: Int) {
     /** Whether a cell in [column] lies right of the line and so is hollow. */
     fun isHollow(column: Int): Boolean = column >= this.column
 
     companion object {
-        /** The column boundary the resting cut sits on, between the A's third and fourth ink columns. */
-        const val REST_COLUMN = 28
-
-        /** The cut for [grid] at [shear]: 0 sits just past the last column, 1 is at rest across the A. */
-        fun at(grid: WordmarkGrid, shear: Float): WordmarkCut {
-            val start = grid.columns.toFloat()
-            return WordmarkCut(ceil(start + (REST_COLUMN - start) * shear.coerceIn(0f, 1f)).toInt())
-        }
+        /** The cut as drawn, between the A's third and fourth ink columns. */
+        val REST: WordmarkCut = WordmarkCut(28)
     }
 }
 
@@ -155,11 +140,11 @@ fun wordmarkCell(grid: WordmarkGrid, size: Size): Size {
  * Draws [WORDMARK] to fill the available width, keeping its aspect ratio.
  *
  * Ink runs a horizontal gradient from primary to tertiary and shadow is a translucent outline, so the mark follows the
- * dynamic palette. [shear] says how far the cut has stepped in, 0 whole to 1 at rest across the A; by default it is the
- * once-per-session progress of [rememberWordmarkShear]. Semantically it is just the app name.
+ * dynamic palette. The cut sits across the A, still: ink to its left, hollow outlines to its right. Semantically it is
+ * just the app name.
  */
 @Composable
-fun Wordmark(modifier: Modifier = Modifier, shear: Float = rememberWordmarkShear()) {
+fun Wordmark(modifier: Modifier = Modifier) {
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
     val flavor = shearFlavor()
     val inkColors = listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))
@@ -174,30 +159,10 @@ fun Wordmark(modifier: Modifier = Modifier, shear: Float = rememberWordmarkShear
                 ink = Brush.horizontalGradient(inkColors, startX = 0f, endX = grid.columns * cell.width),
                 shadow = shadow,
                 skin = Brand.skin(flavor),
-                cut = WordmarkCut.at(grid, shear),
+                cut = WordmarkCut.REST,
             )
         }
     }
-}
-
-/**
- * The wordmark's shear as it plays once per session: the whole word holds a beat, then the cut steps in from the right
- * over [Motion.SHEAR_MS] to rest. The system's animator scale governs the duration, so users who turn animations off
- * see the mark at rest at once.
- *
- * Playing is remembered in saved state, so a header that leaves and comes back, as History does behind a detail, is
- * already at rest rather than replaying; leaving mid-shear counts as played.
- */
-@Composable
-fun rememberWordmarkShear(): Float {
-    var played by rememberSaveable { mutableStateOf(false) }
-    val shear = remember { Animatable(if (played) 1f else 0f) }
-    LaunchedEffect(Unit) {
-        if (played) return@LaunchedEffect
-        played = true
-        shear.animateTo(1f, tween(Motion.SHEAR_MS, delayMillis = Motion.WORDMARK_HOLD_MS, easing = Motion.Easing))
-    }
-    return shear.value
 }
 
 /**

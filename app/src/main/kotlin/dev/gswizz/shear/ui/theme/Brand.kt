@@ -33,12 +33,6 @@ object Brand {
 
 /** Durations and easing for everything Shear animates. Milliseconds. */
 object Motion {
-    /** The wordmark whole and at rest, so the eye lands on it before the cut moves. */
-    const val WORDMARK_HOLD_MS = 250
-
-    /** The wordmark's shear, after the hold: the cut sweeping in from the right to rest across the A. */
-    const val SHEAR_MS = 350
-
     /** The Cut share moment, first frame to handoff: hold, sweep, reflow, settle. */
     const val CUT_MS = 1_800
 
