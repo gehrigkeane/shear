@@ -7,28 +7,27 @@ package dev.gswizz.shear.ui.moment
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import dev.gswizz.shear.R
 import dev.gswizz.shear.data.MomentStyle
 import dev.gswizz.shear.ui.theme.Spacing
 
 /**
- * The scrim, card, and caption every share moment plays inside; [style] picks the scene.
+ * The scrim and card every share moment plays inside; [style] picks the scene.
  *
- * Back finishes at once: the moment is a courtesy, never a gate. The caption states the outcome in words so the scene
- * can stay purely decorative for a screen reader.
+ * Back finishes at once: the moment is a courtesy, never a gate. Nothing is written under the scene; the outcome is the
+ * card's accessibility description, so a screen reader hears it while the scene stays purely decorative.
  */
 @Composable
 fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier = Modifier) {
@@ -42,25 +41,16 @@ fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Uni
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surfaceContainer,
         ) {
-            Column(
-                modifier = Modifier.padding(Spacing.l),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.m),
+            val caption = caption(summary)
+            Box(
+                modifier = Modifier.padding(Spacing.l).semantics { contentDescription = caption },
+                contentAlignment = Alignment.Center,
             ) {
-                val caption = caption(summary)
                 when (style) {
                     MomentStyle.CUT -> CutMoment(summary = summary, onFinished = onFinished)
                     MomentStyle.SHEEP -> SheepMoment(onFinished = onFinished)
-                    // Carries the caption as its description; nothing is drawn beneath it.
-                    MomentStyle.TYPEWRITER -> TypewriterMoment(caption = caption, onFinished = onFinished)
+                    MomentStyle.TYPEWRITER -> TypewriterMoment(onFinished = onFinished)
                     MomentStyle.OFF -> onFinished()
-                }
-                if (style != MomentStyle.TYPEWRITER) {
-                    Text(
-                        text = caption,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
         }

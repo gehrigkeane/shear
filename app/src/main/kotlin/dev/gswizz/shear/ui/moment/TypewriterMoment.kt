@@ -19,8 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import dev.gswizz.shear.ui.WORDMARK
 import dev.gswizz.shear.ui.WordmarkCut
 import dev.gswizz.shear.ui.WordmarkGrid
@@ -33,11 +31,10 @@ import dev.gswizz.shear.ui.wordmarkCell
 
 /**
  * Typewriter: the wordmark stands whole, then a cursor block enters from the right and steps left, hollowing the
- * letters it passes until it rests where the header's cut sits. Nothing is typed beneath it; [caption] is exposed to
- * accessibility services from the first frame so the scene can stay purely decorative.
+ * letters it passes until it rests where the header's cut sits. Nothing is typed beneath it.
  */
 @Composable
-fun TypewriterMoment(caption: String, onFinished: () -> Unit, modifier: Modifier = Modifier) {
+fun TypewriterMoment(onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val flavor = shearFlavor()
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
     val scene = remember { TypewriterScene(grid.columns, WordmarkCut.REST.column) }
@@ -50,9 +47,7 @@ fun TypewriterMoment(caption: String, onFinished: () -> Unit, modifier: Modifier
         }
         onFinished()
     }
-    Canvas(
-        modifier = modifier.fillMaxWidth().aspectRatio(wordmarkAspect(grid)).semantics { contentDescription = caption }
-    ) {
+    Canvas(modifier = modifier.fillMaxWidth().aspectRatio(wordmarkAspect(grid))) {
         val cell = wordmarkCell(grid, size)
         italic(grid, cell) {
             drawGrid(
