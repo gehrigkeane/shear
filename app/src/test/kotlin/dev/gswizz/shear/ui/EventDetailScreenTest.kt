@@ -7,10 +7,12 @@ package dev.gswizz.shear.ui
 
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
@@ -65,6 +67,23 @@ class EventDetailScreenTest {
         // Robolectric's default viewport is short; the trace card is composed but scrolled out of view.
         compose.onNodeWithText("clean-urls rule #44").assertExists()
         compose.onNodeWithText("utm_source=x").assertExists()
+    }
+
+    @Test
+    fun `an unchanged share shows its text once, under Original`() {
+        val same = event.copy(cleanedText = event.originalText!!, status = ShareStatus.UNCHANGED)
+        compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(same), onBack = {}) }
+        // Unmerged, so the card that merges its text into one tappable node does not count twice.
+        compose.onAllNodesWithText("see https://go.example/r?u=x", useUnmergedTree = true).assertCountEquals(1)
+        compose.onNodeWithText("Original").assertIsDisplayed()
+        compose.onNodeWithText("Shared").assertDoesNotExist()
+    }
+
+    @Test
+    fun `an unchanged share whose original was not kept still shows what went out`() {
+        val same = event.copy(originalText = null, cleanedText = event.originalText!!, status = ShareStatus.UNCHANGED)
+        compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(same), onBack = {}) }
+        compose.onNodeWithText("see https://go.example/r?u=x").assertIsDisplayed()
     }
 
     @Test
