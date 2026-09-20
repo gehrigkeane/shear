@@ -62,4 +62,15 @@ class ConfettiSceneTest {
         assertFalse(scene.finished(ConfettiScene.DURATION_MS - 1f))
         assertTrue(scene.finished(ConfettiScene.DURATION_MS.toFloat()))
     }
+
+    @Test
+    fun `the fleece stays on until the pop lands, then shears off with the burst`() {
+        val scene = scene()
+        assertEquals(0f, scene.shear(0f), 0.001f)
+        assertEquals(0f, scene.shear(ConfettiScene.POP_MS.toFloat()), 0.001f)
+        val mid = scene.shear(ConfettiScene.POP_MS + ConfettiScene.SHEAR_MS / 2f)
+        assertTrue("mid-shear $mid", mid > 0f && mid < 1f)
+        assertEquals(1f, scene.shear((ConfettiScene.POP_MS + ConfettiScene.SHEAR_MS).toFloat()), 0.001f)
+        assertEquals(1f, scene.shear(ConfettiScene.DURATION_MS.toFloat()), 0.001f)
+    }
 }
