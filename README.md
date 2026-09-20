@@ -27,7 +27,7 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
    with every hop cleaned before it is fetched.
 4. A share moment plays for a second or two: by default The Cut,
    which shows the tracking tail being sheared off the link.
-   Settings offers Confetti and Typewriter instead, or Off for a straight handoff;
+   Settings offers The Sheep and Typewriter instead, or Off for a straight handoff;
    it also steps aside when the system has animations turned off, and Back skips it.
 5. Android's Sharesheet opens with the cleaned text, and whichever app you choose is noted in Shear's history.
 

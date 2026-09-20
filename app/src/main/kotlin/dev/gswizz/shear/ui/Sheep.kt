@@ -77,9 +77,10 @@ object SheepGeometry {
 
 /**
  * Draws the sheep to fill [bounds], sheared by [shear]: 0 keeps every curl, 1 is the launcher icon's cut, and values
- * between move the shear line from the rear toward the head.
+ * between move the shear line from the rear toward the head. [depth] is how far down the sheep the cut has been made, 0
+ * for none and 1 for all the way through; fleece behind the line below that point is still on.
  */
-fun DrawScope.drawSheep(bounds: Rect, flavor: Flavor, shear: Float = 1f) {
+fun DrawScope.drawSheep(bounds: Rect, flavor: Flavor, shear: Float = 1f, depth: Float = 1f) {
     val g = SheepGeometry
     val skin = Brand.skin(flavor)
     val face = Brand.face(flavor)
@@ -94,7 +95,7 @@ fun DrawScope.drawSheep(bounds: Rect, flavor: Flavor, shear: Float = 1f) {
             size = leg.size,
             cornerRadius = g.legRadius,
         )
-        clipPath(cutPath(shear)) {
+        clipPath(cutPath(shear, depth)) {
             drawPath(
                 path = fleecePath(),
                 brush =
@@ -122,14 +123,20 @@ private fun fleecePath(): Path {
     return path
 }
 
-/** The region of fleece that survives [shear]: everything left of a slanted line. */
-private fun cutPath(shear: Float): Path {
+/**
+ * The region of fleece that survives [shear] down to [depth]: everything left of a slanted line, plus everything below
+ * the point the blade has reached on it.
+ */
+private fun cutPath(shear: Float, depth: Float): Path {
     val g = SheepGeometry
     val top = g.CUT_TOP_X + (1f - shear.coerceIn(0f, 1f)) * g.CUT_TRAVEL
+    val reach = depth.coerceIn(0f, 1f) * g.UNITS
     return Path().apply {
         moveTo(0f, 0f)
         lineTo(top, 0f)
-        lineTo(top + g.CUT_RUN, g.UNITS)
+        lineTo(top + g.CUT_RUN * (reach / g.UNITS), reach)
+        lineTo(g.UNITS, reach)
+        lineTo(g.UNITS, g.UNITS)
         lineTo(0f, g.UNITS)
         close()
     }

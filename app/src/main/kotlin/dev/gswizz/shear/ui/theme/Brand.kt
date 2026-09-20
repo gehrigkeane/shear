@@ -48,8 +48,8 @@ object Motion {
     /** The Cut: the clean URL at rest before the sharesheet. */
     const val CUT_SETTLE_MS = 300
 
-    /** The Confetti share moment, pop to last faded square. */
-    const val CONFETTI_MS = 1_500
+    /** The Sheep share moment, first frame to handoff: hold, the blade's descent, the shorn sheep at rest. */
+    const val SHEEP_MS = 1_500
 
     /** The Typewriter share moment, first column to the end of the hold after the caption. */
     const val TYPEWRITER_MS = 1_600

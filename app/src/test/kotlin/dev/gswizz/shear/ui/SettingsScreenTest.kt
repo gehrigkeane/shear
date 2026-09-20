@@ -59,8 +59,8 @@ class SettingsScreenTest {
         compose.setContent {
             SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onMoment = { chosen = it }), onBack = {})
         }
-        compose.onNodeWithText("Confetti").performScrollTo().performClick()
-        assertEquals(MomentStyle.CONFETTI, chosen)
+        compose.onNodeWithText("The Sheep").performScrollTo().performClick()
+        assertEquals(MomentStyle.SHEEP, chosen)
     }
 
     @Test
