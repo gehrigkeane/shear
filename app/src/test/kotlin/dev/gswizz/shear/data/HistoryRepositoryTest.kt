@@ -89,6 +89,44 @@ class HistoryRepositoryTest {
     }
 
     @Test
+    fun `sharing the same text again replaces the earlier row`() = runBlocking {
+        val repo = repository(this)
+        repo
+            .record(
+                "e1",
+                HistoryFixtures.ORIGINAL,
+                HistoryFixtures.textResult,
+                ShareStatus.CLEANED,
+                settings.state.value,
+            )
+            .join()
+        now += 60_000
+        repo
+            .record(
+                "e2",
+                HistoryFixtures.ORIGINAL,
+                HistoryFixtures.textResult,
+                ShareStatus.CLEANED,
+                settings.state.value,
+            )
+            .join()
+        repo
+            .record(
+                "e3",
+                "other text",
+                TextResult("other text", "other text", emptyList()),
+                ShareStatus.NO_URLS,
+                settings.state.value,
+            )
+            .join()
+        val events = repo.observeEvents().first()
+        assertEquals(listOf("e3", "e2"), events.map { it.id })
+        assertEquals(now, events.single { it.id == "e2" }.timestamp)
+        assertNull(repo.observeEvent("e1").first())
+        assertEquals(1, db.dao().traceCount())
+    }
+
+    @Test
     fun `retention off records nothing and deletes what exists`() = runBlocking {
         val repo = repository(this)
         repo.record("e1", HistoryFixtures.ORIGINAL, HistoryFixtures.textResult, ShareStatus.CLEANED, Settings()).join()
@@ -103,8 +141,15 @@ class HistoryRepositoryTest {
         val repo = repository(this)
         repo.record("old", HistoryFixtures.ORIGINAL, HistoryFixtures.textResult, ShareStatus.CLEANED, Settings()).join()
         now += 30 * day
+        // Different text, or the newer share would simply replace the older row.
         repo
-            .record("edge", HistoryFixtures.ORIGINAL, HistoryFixtures.textResult, ShareStatus.CLEANED, Settings())
+            .record(
+                "edge",
+                "edge ${HistoryFixtures.ORIGINAL}",
+                HistoryFixtures.textResult,
+                ShareStatus.CLEANED,
+                Settings(),
+            )
             .join()
         assertEquals(listOf("edge", "old"), repo.observeEvents().first().map { it.id })
         now += 1
