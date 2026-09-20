@@ -6,6 +6,7 @@
 package dev.gswizz.shear
 
 import android.content.Context
+import android.graphics.Color
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.test.core.app.ApplicationProvider
@@ -35,6 +36,16 @@ class ShareShortcutTest {
     fun `the icon is full-bleed adaptive layers the system masks like the launcher icon`() {
         // Read back from the manager, shortcuts carry no icon, so inspect the one we publish.
         assertEquals(IconCompat.TYPE_ADAPTIVE_BITMAP, ShareShortcut.shortcut(context).icon.type)
+    }
+
+    @Test
+    fun `the shortcut sheep is unshorn, so it is not the launcher icon again`() {
+        // Robolectric is mdpi, so one sheep unit is one pixel. The launcher shows skin at the rear; here it is fleece.
+        val icon = ShareShortcut.icon(context)
+        val rear = icon.getPixel(75, 60)
+        assertEquals(255, Color.alpha(rear))
+        assertTrue("rear keeps its fleece, got #${Integer.toHexString(rear)}", Color.red(rear) > Color.blue(rear))
+        assertEquals(context.getColor(R.color.ic_launcher_background), icon.getPixel(2, 2))
     }
 
     @Test
