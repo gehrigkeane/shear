@@ -80,6 +80,7 @@ shear/
   Shear never renders or ranks destinations; the relay excludes Shear from its chooser.
   The one exception is `PinDemo`, a sharesheet opened from Settings or the first-run card that keeps Shear listed
   so the user can long-press it and choose Pin, the only promotion Android allows.
+  Its sample link is cleaned and recorded like any other share.
 - **Persistence never blocks the share.**
   History writes run on a single ordered worker;
   the event id is allocated before any I/O so the chooser callback can attach after process death.

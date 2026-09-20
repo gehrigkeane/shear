@@ -6,8 +6,6 @@
 package dev.gswizz.shear
 
 import android.animation.ValueAnimator
-import android.app.PendingIntent
-import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -107,7 +105,7 @@ class ShareReceiverActivity : ComponentActivity() {
         val offline = withContext(graph.defaultDispatcher) { engine.clean(text) }
         val mode = settings.redirectMode
         if (mode == ResolveMode.OFF || !engine.needsNetwork(text, mode)) {
-            present(offline, statusOf(offline), settings)
+            present(offline, offline.toShareStatus(), settings)
             return
         }
         inFlight = InFlight(offline, settings)
@@ -130,7 +128,8 @@ class ShareReceiverActivity : ComponentActivity() {
             present(offline, ShareStatus.RESOLUTION_INCOMPLETE, settings)
         } else {
             val status =
-                if (resolved.urls.any { it.failure != null }) ShareStatus.RESOLUTION_INCOMPLETE else statusOf(resolved)
+                if (resolved.urls.any { it.failure != null }) ShareStatus.RESOLUTION_INCOMPLETE
+                else resolved.toShareStatus()
             present(resolved, status, settings)
         }
     }
@@ -183,30 +182,8 @@ class ShareReceiverActivity : ComponentActivity() {
 
     private fun share(result: TextResult, status: ShareStatus, settings: Settings) {
         graph.history.record(eventId, text, result, status, settings)
-        startActivity(chooser(result.outputText, subject, eventId))
+        startActivity(Choosers.forText(this, result.outputText, subject, eventId, excludeSelf = true))
         finish()
-    }
-
-    private fun statusOf(result: TextResult): ShareStatus =
-        when {
-            result.urls.isEmpty() -> ShareStatus.NO_URLS
-            result.changed -> ShareStatus.CLEANED
-            else -> ShareStatus.UNCHANGED
-        }
-
-    private fun chooser(text: String, subject: CharSequence?, eventId: String): Intent {
-        val relay = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
-        if (subject != null) relay.putExtra(Intent.EXTRA_SUBJECT, subject)
-        val callback =
-            PendingIntent.getBroadcast(
-                this,
-                eventId.hashCode(),
-                ChosenComponentReceiver.callback(this, eventId),
-                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-            )
-        val self = ComponentName(this, ShareReceiverActivity::class.java)
-        return Intent.createChooser(relay, null, callback.intentSender)
-            .putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(self))
     }
 
     companion object {
