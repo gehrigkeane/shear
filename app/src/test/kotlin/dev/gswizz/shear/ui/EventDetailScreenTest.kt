@@ -10,6 +10,7 @@ import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasNoClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -63,7 +64,8 @@ class EventDetailScreenTest {
         // The header mirrors the history row: hosts as the title, time and destination beneath.
         compose.onNodeWithText("dest.example").assertIsDisplayed()
         compose.onNode(hasText(" · Messages", substring = true)).assertIsDisplayed()
-        compose.onNodeWithText("Cleaned").assertIsDisplayed().assertHasNoClickAction()
+        // The badge and the box below it both say Sheared; only the box is tappable.
+        compose.onNode(hasText("Sheared") and hasNoClickAction()).assertIsDisplayed()
         // Robolectric's default viewport is short; the trace card is composed but scrolled out of view.
         compose.onNodeWithText("clean-urls rule #44").assertExists()
         compose.onNodeWithText("utm_source=x").assertExists()
@@ -76,7 +78,7 @@ class EventDetailScreenTest {
         // Unmerged, so the card that merges its text into one tappable node does not count twice.
         compose.onAllNodesWithText("see https://go.example/r?u=x", useUnmergedTree = true).assertCountEquals(1)
         compose.onNodeWithText("Original").assertIsDisplayed()
-        compose.onNodeWithText("Shared").assertDoesNotExist()
+        compose.onNodeWithText("Sheared").assertDoesNotExist()
     }
 
     @Test
@@ -95,7 +97,7 @@ class EventDetailScreenTest {
     }
 
     @Test
-    fun `tapping Shared copies the cleaned text`() {
+    fun `tapping Sheared copies the sheared text`() {
         compose.setContent { EventDetailScreen(state = EventDetailUiState.Loaded(event), onBack = {}) }
         compose.onNodeWithText("see https://dest.example/a?id=1").performClick()
         assertEquals("see https://dest.example/a?id=1", clipboardText())
