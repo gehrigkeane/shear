@@ -144,7 +144,6 @@ fun HistoryRoute(
     onSettings: () -> Unit,
     onPinDemo: () -> Unit,
     modifier: Modifier = Modifier,
-    shared: SharedScopes? = null,
     viewModel: HistoryViewModel = viewModel { HistoryViewModel(graph) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -153,7 +152,6 @@ fun HistoryRoute(
         onOpen = onOpen,
         onSettings = onSettings,
         modifier = modifier,
-        shared = shared,
         onPinDemo = {
             onPinDemo()
             viewModel.dismissPinPrompt()
@@ -169,7 +167,6 @@ fun HistoryScreen(
     onOpen: (String) -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    shared: SharedScopes? = null,
     onPinDemo: () -> Unit = {},
     onDismissPin: () -> Unit = {},
 ) {
@@ -201,7 +198,7 @@ fun HistoryScreen(
                         for (section in state.sections) {
                             stickyHeader(key = section.date.toString()) { DayHeader(date = section.date) }
                             items(section.rows, key = { it.id }) { row ->
-                                HistoryRowItem(row = row, onClick = { onOpen(row.id) }, shared = shared)
+                                HistoryRowItem(row = row, onClick = { onOpen(row.id) })
                             }
                         }
                     }
@@ -273,14 +270,13 @@ private fun HistoryRowItem(
     row: HistoryRow,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shared: SharedScopes? = null,
 ) {
     val time = row.time.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
     ListItem(
         headlineContent = {
             Text(
                 text = row.summary.ifEmpty { stringResource(R.string.no_links) },
-                modifier = Modifier.sharedBoundsIn(shared, "summary/${row.id}"),
+                modifier = Modifier,
             )
         },
         supportingContent = { Text(text = row.destination?.label ?: stringResource(R.string.destination_unknown)) },
@@ -290,7 +286,7 @@ private fun HistoryRowItem(
                 Image(
                     bitmap = icon,
                     contentDescription = null,
-                    modifier = Modifier.sharedElementIn(shared, "icon/${row.id}").size(40.dp),
+                    modifier = Modifier.size(40.dp),
                 )
             }
         },
