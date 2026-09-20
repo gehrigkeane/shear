@@ -11,34 +11,34 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TypewriterSceneTest {
-    private val scene = TypewriterScene(columns = 40, captionLength = 10)
+    private val scene = TypewriterScene(columns = 40, restColumn = 28)
 
     @Test
-    fun `columns appear left to right over the typing stretch`() {
-        assertEquals(0, scene.visibleColumns(0f))
-        assertEquals(20, scene.visibleColumns(TypewriterScene.TYPE_MS / 2f))
-        assertEquals(40, scene.visibleColumns(TypewriterScene.TYPE_MS.toFloat()))
-        assertEquals(40, scene.visibleColumns(TypewriterScene.DURATION_MS - 1f))
+    fun `through the hold the whole word is solid and the cursor waits at the right edge`() {
+        assertEquals(40, scene.cutColumn(0f))
+        assertEquals(40, scene.cutColumn(TypewriterScene.HOLD_MS - 1f))
+        assertEquals(39, scene.cursorColumn(0f))
     }
 
     @Test
-    fun `the cursor rides the reveal edge and stops at the last column`() {
-        assertEquals(0, scene.cursorColumn(0f))
-        assertEquals(20, scene.cursorColumn(TypewriterScene.TYPE_MS / 2f))
-        assertEquals(39, scene.cursorColumn(TypewriterScene.TYPE_MS.toFloat()))
+    fun `the cut steps left from the edge to rest without ever moving back`() {
+        val end = TypewriterScene.HOLD_MS + TypewriterScene.SWEEP_MS
+        val columns = (0..20).map { scene.cutColumn(TypewriterScene.HOLD_MS + TypewriterScene.SWEEP_MS * it / 20f) }
+        assertEquals(40, columns.first())
+        assertEquals(28, columns.last())
+        for (i in 1 until columns.size) assertTrue("step $i", columns[i] <= columns[i - 1])
+        assertEquals(28, scene.cutColumn(TypewriterScene.DURATION_MS - 1f))
+        assertTrue(end < TypewriterScene.DURATION_MS)
+    }
+
+    @Test
+    fun `the cursor rides the column about to go hollow and leaves once the sweep is over`() {
+        val mid = TypewriterScene.HOLD_MS + TypewriterScene.SWEEP_MS / 2f
+        assertEquals(scene.cutColumn(mid) - 1, scene.cursorColumn(mid))
+        assertTrue(scene.cursorShown(mid))
+        assertFalse(scene.cursorShown(TypewriterScene.HOLD_MS + TypewriterScene.SWEEP_MS.toFloat()))
         assertTrue(scene.cursorOn(0f))
         assertFalse(scene.cursorOn(TypewriterScene.BLINK_MS.toFloat()))
-        assertTrue(scene.cursorOn(TypewriterScene.BLINK_MS * 2f))
-    }
-
-    @Test
-    fun `the caption types in only after the wordmark is complete`() {
-        assertEquals(0, scene.captionChars(TypewriterScene.TYPE_MS - 1f))
-        assertEquals(5, scene.captionChars(TypewriterScene.TYPE_MS + TypewriterScene.CAPTION_MS / 2f))
-        assertEquals(10, scene.captionChars(TypewriterScene.TYPE_MS + TypewriterScene.CAPTION_MS.toFloat()))
-        // Then the finished wordmark and caption hold until the budget runs out.
-        assertEquals(10, scene.captionChars(TypewriterScene.DURATION_MS.toFloat()))
-        assertTrue(TypewriterScene.TYPE_MS + TypewriterScene.CAPTION_MS < TypewriterScene.DURATION_MS)
     }
 
     @Test
