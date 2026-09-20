@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import dev.gswizz.shear.ui.drawSheep
+import dev.gswizz.shear.ui.drawScissors
 import dev.gswizz.shear.ui.theme.Catppuccin
 
 /**
@@ -31,8 +31,8 @@ import dev.gswizz.shear.ui.theme.Catppuccin
  * use; long-lived and rank zero are the only static hints the platform accepts. Placement is the system's call and is
  * not guaranteed.
  *
- * The sharesheet badges every direct-share entry with its app's icon, so the shortcut wears a different face: the sheep
- * before its trim, every curl still on, with the shorn launcher sheep as the badge showing what a share does.
+ * The sharesheet badges every direct-share entry with its app's icon, so the shortcut shows the tool rather than the
+ * animal: scissors, with the shorn launcher sheep as the badge. The scissors lean away from that corner.
  */
 object ShareShortcut {
     const val ID = "shear"
@@ -64,7 +64,7 @@ object ShareShortcut {
             .build()
 
     /**
-     * The unshorn sheep on the launcher background, full bleed, for the system to mask like an app icon.
+     * The scissors on the launcher background, full bleed, for the system to mask like an app icon.
      *
      * Handing a drawable resource over would show it unmasked, a raw square; a bitmap declared adaptive lets the
      * sharesheet apply the same shape it uses everywhere else.
@@ -76,7 +76,7 @@ object ShareShortcut {
         val bounds = Rect(Offset.Zero, Size(side.toFloat(), side.toFloat()))
         CanvasDrawScope().draw(Density(density), LayoutDirection.Ltr, Canvas(image), bounds.size) {
             drawRect(color = Color(context.getColor(R.color.ic_launcher_background)))
-            drawSheep(bounds = bounds, flavor = flavor, shear = 0f)
+            drawScissors(bounds = bounds, flavor = flavor)
         }
         return image.asAndroidBitmap()
     }

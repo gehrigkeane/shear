@@ -7,9 +7,15 @@ package dev.gswizz.shear
 
 import android.content.Context
 import android.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.test.core.app.ApplicationProvider
+import dev.gswizz.shear.ui.ScissorsGeometry
+import dev.gswizz.shear.ui.theme.Brand
+import dev.gswizz.shear.ui.theme.Catppuccin
+import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,13 +45,27 @@ class ShareShortcutTest {
     }
 
     @Test
-    fun `the shortcut sheep is unshorn, so it is not the launcher icon again`() {
-        // Robolectric is mdpi, so one sheep unit is one pixel. The launcher shows skin at the rear; here it is fleece.
+    fun `the shortcut is the scissors, pivot and blades and hollow rings where the geometry says`() {
+        // Robolectric is mdpi, so one icon unit is one pixel; sample points come from the geometry, not from the art.
         val icon = ShareShortcut.icon(context)
-        val rear = icon.getPixel(75, 60)
-        assertEquals(255, Color.alpha(rear))
-        assertTrue("rear keeps its fleece, got #${Integer.toHexString(rear)}", Color.red(rear) > Color.blue(rear))
-        assertEquals(context.getColor(R.color.ic_launcher_background), icon.getPixel(2, 2))
+        val background = context.getColor(R.color.ic_launcher_background)
+        fun at(p: Offset) = icon.getPixel(p.x.roundToInt(), p.y.roundToInt())
+        val pivot = at(ScissorsGeometry.pivot)
+        assertEquals("pivot is the face color", Brand.face(Catppuccin.Mocha).toArgb(), pivot)
+        for (tip in ScissorsGeometry.tips) {
+            val mid = at((ScissorsGeometry.pivot + tip) / 2f)
+            assertEquals(255, Color.alpha(mid))
+            assertTrue("blade is ink, got #${Integer.toHexString(mid)}", Color.red(mid) > Color.blue(mid))
+        }
+        for (ring in ScissorsGeometry.ringCenters) assertEquals("rings are hollow", background, at(ring))
+    }
+
+    @Test
+    fun `the implement leans right, so the corner the sharesheet badges stays clear`() {
+        val icon = ShareShortcut.icon(context)
+        val background = context.getColor(R.color.ic_launcher_background)
+        // The system shows the central 72 of 108 units; the badge sits over the bottom-right of that.
+        for (x in 78..88 step 5) for (y in 78..88 step 5) assertEquals("($x,$y)", background, icon.getPixel(x, y))
     }
 
     @Test
