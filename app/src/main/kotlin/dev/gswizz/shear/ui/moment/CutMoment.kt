@@ -149,7 +149,7 @@ fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier
     }
 }
 
-/** The wordmark's own reveal, for shares that carried no link at all. */
+/** The wordmark's own shear, for shares that carried no link at all. */
 @Composable
 private fun WordmarkMoment(onFinished: () -> Unit, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
