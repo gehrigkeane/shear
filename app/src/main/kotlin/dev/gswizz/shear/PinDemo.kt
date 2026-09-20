@@ -18,8 +18,11 @@ import kotlinx.coroutines.withContext
  * listed.
  */
 object PinDemo {
-    /** A tracked link, so the demo shows a real clean. */
-    const val SAMPLE_TEXT = "https://example.com/read?utm_source=shear&utm_medium=pin"
+    /**
+     * A link with two trackers the bundled rules remove, a campaign tag and a Facebook click id, around one parameter
+     * that stays, so the sheet shows a real clean rather than a wipe.
+     */
+    const val SAMPLE_TEXT = "https://example.com/read?id=42&utm_source=newsletter&fbclid=IwAR0pin"
 
     /** Shears the sample and returns the chooser to start. */
     suspend fun share(context: Context, graph: AppGraph): Intent {
