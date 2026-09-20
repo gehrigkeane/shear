@@ -5,31 +5,24 @@
  */
 package dev.gswizz.shear.ui
 
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
-import androidx.compose.ui.graphics.toPixelMap
-import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import dev.gswizz.shear.ui.theme.ShearTheme
+import dev.gswizz.shear.ui.theme.Brand
+import dev.gswizz.shear.ui.theme.Catppuccin
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class WordmarkTest {
-    @get:Rule val compose = createComposeRule()
-
     private val grid = WordmarkGrid.parse(WORDMARK)
     private val ink = grid.cells.filter { it.ink }.map { it.column to it.row }.toSet()
+    private val flavor = Catppuccin.Mocha
 
     /** The pixel under grid point ([column], [row]) once the wordmark leans; rows above the bottom shift right. */
     private fun PixelMap.at(column: Float, row: Float): Color {
@@ -38,17 +31,33 @@ class WordmarkTest {
         return this[x, (row * cell).toInt()]
     }
 
-    private fun render(width: Dp): PixelMap {
-        compose.setContent { ShearTheme { Wordmark(modifier = Modifier.width(width)) } }
-        compose.mainClock.advanceTimeBy(3_000)
-        return compose.onNodeWithContentDescription("Shear").captureToImage().toPixelMap()
-    }
+    /** The wordmark as [Wordmark] draws it, [width] pixels wide at its own aspect ratio, over the flavor's base. */
+    private fun render(width: Int): PixelMap =
+        raster(width, (width / wordmarkAspect(grid)).roundToInt()) {
+            drawRect(flavor.base)
+            val cell = wordmarkCell(grid, size)
+            italic(grid, cell) {
+                drawGrid(
+                    grid = grid,
+                    cell = cell,
+                    ink =
+                        Brush.horizontalGradient(
+                            listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor)),
+                            startX = 0f,
+                            endX = grid.columns * cell.width,
+                        ),
+                    shadow = Brand.shadow(flavor).copy(alpha = 0.5f),
+                    skin = Brand.skin(flavor),
+                    cut = WordmarkCut.REST,
+                )
+            }
+        }
 
     @Test
     fun `adjacent ink cells fill without seams at fractional cell sizes`() {
-        // 300dp over forty-odd columns lands on a fractional cell size on Robolectric's mdpi screen, so cell edges
-        // split pixels, which is where per-rectangle anti-aliasing shows seams.
-        val pixels = render(300.dp)
+        // 300 pixels over forty-odd columns lands on a fractional cell size, so cell edges split pixels, which is where
+        // per-rectangle anti-aliasing shows seams.
+        val pixels = render(300)
         // The first letter's top row is a run of solid cells from column 0; sample along its vertical middle.
         val run = generateSequence(0) { it + 1 }.takeWhile { (it to 0) in ink }.count()
         assertTrue("first letter has a top bar", run >= 3)
@@ -64,9 +73,9 @@ class WordmarkTest {
     }
 
     @Test
-    fun `at rest the letters right of the cut are hollow outlines in skin over what lies behind`() {
-        val pixels = render(400.dp)
-        val cut = WordmarkCut.at(grid, shear = 1f)
+    fun `right of the cut the letters are hollow outlines in skin over what lies behind`() {
+        val pixels = render(400)
+        val cut = WordmarkCut.REST
         val splitRow = (0 until grid.rows).first { (cut.column - 1 to it) in ink && (cut.column to it) in ink }
         val topCell = grid.cells.first { it.ink && cut.isHollow(it.column) && (it.column to it.row - 1) !in ink }
         val rightCell = grid.cells.first { it.ink && cut.isHollow(it.column) && (it.column + 1 to it.row) !in ink }

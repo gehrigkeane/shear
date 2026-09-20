@@ -47,7 +47,7 @@ import dev.gswizz.shear.ui.wordmarkCell
 fun TypewriterMoment(caption: String, onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val flavor = shearFlavor()
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
-    val cut = remember(grid) { WordmarkCut.at(grid, shear = 1f) }
+    val cut = WordmarkCut.REST
     val scene = remember(caption) { TypewriterScene(grid.columns, caption.length) }
     val measurer = rememberTextMeasurer()
     val captionStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
