@@ -7,21 +7,13 @@ package dev.gswizz.shear.ui.moment
 
 import dev.gswizz.shear.core.TextResult
 
-/** What a share moment has to say about the share: how many links, whether anything changed, and what fell. */
-data class MomentSummary(
-    val urlCount: Int,
-    val changed: Boolean,
-    /** Distinct names of removed parameters across every link, in order of appearance. */
-    val removedNames: List<String>,
-    val firstUrl: String?,
-    val cut: CutPlan?,
-) {
+/** What a share moment has to say about the share: how many links, whether anything changed, and what to cut. */
+data class MomentSummary(val urlCount: Int, val changed: Boolean, val firstUrl: String?, val cut: CutPlan?) {
     companion object {
         fun of(result: TextResult): MomentSummary =
             MomentSummary(
                 urlCount = result.urls.size,
                 changed = result.changed,
-                removedNames = result.urls.flatMap { url -> url.removedParameters.map { it.name } }.distinct(),
                 firstUrl = result.urls.firstOrNull()?.originalUrl,
                 cut = CutPlan.of(result),
             )
