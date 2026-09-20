@@ -31,6 +31,10 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
    it also steps aside when the system has animations turned off, and Back skips it.
 5. Android's Sharesheet opens with the cleaned text, and whichever app you choose is noted in Shear's history.
 
+Shear also publishes a sharing shortcut,
+so the share sheet's top row may offer it directly once you have used it a few times;
+that placement is Android's decision.
+
 Anything that is not a link is untouched, byte for byte.
 A link that Shear cannot clean is passed through exactly as you shared it.
 

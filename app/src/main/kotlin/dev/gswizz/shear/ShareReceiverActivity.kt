@@ -182,6 +182,7 @@ class ShareReceiverActivity : ComponentActivity() {
 
     private fun share(result: TextResult, status: ShareStatus, settings: Settings) {
         graph.history.record(eventId, text, result, status, settings)
+        ShareShortcut.reportUsed(this)
         startActivity(Choosers.forText(this, result.outputText, subject, eventId, excludeSelf = true))
         finish()
     }
