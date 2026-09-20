@@ -34,19 +34,19 @@ object Brand {
 /** Durations and easing for everything Shear animates. Milliseconds. */
 object Motion {
     /** The Cut share moment, first frame to handoff: hold, sweep, reflow, settle. */
-    const val CUT_MS = 1_800
+    const val CUT_MS = 2_000
 
     /** The Cut: how long the URL sits still so the eye can land before the blade moves. */
     const val CUT_HOLD_MS = 250
 
-    /** The Cut: the blade's crossing. */
-    const val CUT_SWEEP_MS = 800
+    /** The Cut: the blade's crossing, slow enough to be watched character by character. */
+    const val CUT_SWEEP_MS = 1_100
 
     /** The Cut: survivors reflowing into the clean URL while the last crumbs fall. */
     const val CUT_REFLOW_MS = 350
 
     /** The Cut: the clean URL at rest before the sharesheet. */
-    const val CUT_SETTLE_MS = 400
+    const val CUT_SETTLE_MS = 300
 
     /** The Confetti share moment, pop to last faded square. */
     const val CONFETTI_MS = 1_500
