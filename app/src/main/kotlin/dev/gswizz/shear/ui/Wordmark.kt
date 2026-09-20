@@ -151,9 +151,9 @@ fun wordmarkCell(grid: WordmarkGrid, size: Size): Size {
  * Draws [WORDMARK] to fill the available width, keeping its aspect ratio.
  *
  * Ink runs a horizontal gradient from primary to tertiary and shadow is a translucent outline, so the mark follows the
- * dynamic palette. On first display the cells appear along a diagonal wipe, then the shear line steps in from the right
- * column by column and hollows what it passes, coming to rest across the A; the system's animator scale governs the
- * duration, so users who turn animations off see the mark at once. Semantically it is just the app name.
+ * dynamic palette. On first display the whole word is there and holds a beat, then the shear line steps in from the
+ * right column by column and hollows what it passes, coming to rest across the A; the system's animator scale governs
+ * the duration, so users who turn animations off see the mark at rest at once. Semantically it is just the app name.
  */
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
@@ -161,16 +161,13 @@ fun Wordmark(modifier: Modifier = Modifier) {
     val flavor = shearFlavor()
     val inkColors = listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))
     val shadow = Brand.shadow(flavor).copy(alpha = SHADOW_ALPHA)
-    val reveal = remember { Animatable(0f) }
     val shear = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
-        reveal.animateTo(1f, tween(Motion.REVEAL_MS, easing = Motion.Easing))
-        shear.animateTo(1f, tween(Motion.SHEAR_MS, easing = Motion.Easing))
+        shear.animateTo(1f, tween(Motion.SHEAR_MS, delayMillis = Motion.WORDMARK_HOLD_MS, easing = Motion.Easing))
     }
     val name = stringResource(R.string.app_name)
     Canvas(modifier = modifier.aspectRatio(wordmarkAspect(grid)).clearAndSetSemantics { contentDescription = name }) {
         val cell = wordmarkCell(grid, size)
-        val limit = reveal.value * (grid.columns + grid.rows)
         italic(grid, cell) {
             drawGrid(
                 grid = grid,
@@ -179,9 +176,7 @@ fun Wordmark(modifier: Modifier = Modifier) {
                 shadow = shadow,
                 skin = Brand.skin(flavor),
                 cut = WordmarkCut.at(grid, shear.value),
-            ) {
-                it.column + it.row < limit
-            }
+            )
         }
     }
 }
@@ -218,7 +213,7 @@ fun DrawScope.drawGrid(
     shadow: Color,
     skin: Color,
     cut: WordmarkCut,
-    visible: (Cell) -> Boolean,
+    visible: (Cell) -> Boolean = { true },
 ) {
     val inkPath = Path()
     val shadowBars = Path()
