@@ -54,7 +54,7 @@
     <string name="moment_confetti">Confetti</string>
     <string name="moment_confetti_desc">A little pixel party</string>
     <string name="moment_typewriter">Typewriter</string>
-    <string name="moment_typewriter_desc">Shear types itself out, one letter at a time</string>
+    <string name="moment_typewriter_desc">A cursor hollows Shear out, one column at a time</string>
     <string name="moment_preview">Preview</string>
     <string name="settings_history">History</string>
     <string name="settings_retention_off">Don\'t keep history</string>

@@ -6,35 +6,35 @@
 package dev.gswizz.shear.ui.moment
 
 import dev.gswizz.shear.ui.theme.Motion
+import kotlin.math.ceil
 
 /**
- * The timeline of Typewriter, drawing aside: the wordmark's columns appear left to right behind a blinking cursor, then
- * the caption types in beneath it.
+ * The timeline of Typewriter, drawing aside: the whole wordmark stands solid for a hold, then a cursor enters from the
+ * right edge and steps left column by column, hollowing every column it passes, until it rests where the header's cut
+ * sits. Snapping to whole columns keeps the line on the grid while it moves.
  */
-class TypewriterScene(private val columns: Int, private val captionLength: Int) {
-    /** Columns of the wordmark shown at [tMs]; all of them once the typing stretch is over. */
-    fun visibleColumns(tMs: Float): Int = ((tMs / TYPE_MS).coerceIn(0f, 1f) * columns).toInt()
+class TypewriterScene(private val columns: Int, private val restColumn: Int) {
+    /** The first hollow column at [tMs]: [columns] while nothing is hollow, [restColumn] once the sweep is done. */
+    fun cutColumn(tMs: Float): Int {
+        val progress = Motion.Easing.transform(((tMs - HOLD_MS) / SWEEP_MS).coerceIn(0f, 1f))
+        return ceil(columns + (restColumn - columns) * progress).toInt()
+    }
 
-    /** The column the cursor block sits on: the reveal edge, held on the last column at the end. */
-    fun cursorColumn(tMs: Float): Int = visibleColumns(tMs).coerceAtMost(columns - 1)
+    /** The column the cursor block sits on: the solid column about to go hollow. */
+    fun cursorColumn(tMs: Float): Int = (cutColumn(tMs) - 1).coerceAtLeast(0)
+
+    /** Whether the cursor is on screen at all: only while there is sweeping left to do. */
+    fun cursorShown(tMs: Float): Boolean = tMs < HOLD_MS + SWEEP_MS
 
     /** Whether the cursor is lit in this blink phase. */
     fun cursorOn(tMs: Float): Boolean = (tMs / BLINK_MS).toInt() % 2 == 0
-
-    /**
-     * Characters of the caption shown at [tMs]; none until the wordmark is complete, all once [CAPTION_MS] has passed.
-     */
-    fun captionChars(tMs: Float): Int {
-        val progress = ((tMs - TYPE_MS) / CAPTION_MS).coerceIn(0f, 1f)
-        return (progress * captionLength).toInt()
-    }
 
     fun finished(tMs: Float): Boolean = tMs >= DURATION_MS
 
     companion object {
         const val DURATION_MS = Motion.TYPEWRITER_MS
-        const val TYPE_MS = 800
-        const val CAPTION_MS = 500
+        const val HOLD_MS = 300
+        const val SWEEP_MS = 900
         const val BLINK_MS = 120
     }
 }
