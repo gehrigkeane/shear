@@ -31,8 +31,8 @@ import dev.gswizz.shear.ui.theme.shearFlavor
 /**
  * The SHEAR wordmark as ANSI-Shadow box-drawing art.
  *
- * This string is the single source of the mark: [Wordmark] draws it on screen and the launcher icon is its first letter
- * rendered to vector paths. Every glyph must have a mapping in [WordmarkGrid.parse].
+ * This string is the single source of the wordmark: [Wordmark] draws it on screen and the moments animate it. Every
+ * glyph must have a mapping in [WordmarkGrid.parse].
  */
 const val WORDMARK =
     """
