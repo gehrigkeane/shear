@@ -11,7 +11,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -151,20 +155,15 @@ fun wordmarkCell(grid: WordmarkGrid, size: Size): Size {
  * Draws [WORDMARK] to fill the available width, keeping its aspect ratio.
  *
  * Ink runs a horizontal gradient from primary to tertiary and shadow is a translucent outline, so the mark follows the
- * dynamic palette. On first display the whole word is there and holds a beat, then the shear line steps in from the
- * right column by column and hollows what it passes, coming to rest across the A; the system's animator scale governs
- * the duration, so users who turn animations off see the mark at rest at once. Semantically it is just the app name.
+ * dynamic palette. [shear] says how far the cut has stepped in, 0 whole to 1 at rest across the A; by default it is the
+ * once-per-session progress of [rememberWordmarkShear]. Semantically it is just the app name.
  */
 @Composable
-fun Wordmark(modifier: Modifier = Modifier) {
+fun Wordmark(modifier: Modifier = Modifier, shear: Float = rememberWordmarkShear()) {
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
     val flavor = shearFlavor()
     val inkColors = listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))
     val shadow = Brand.shadow(flavor).copy(alpha = SHADOW_ALPHA)
-    val shear = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
-        shear.animateTo(1f, tween(Motion.SHEAR_MS, delayMillis = Motion.WORDMARK_HOLD_MS, easing = Motion.Easing))
-    }
     val name = stringResource(R.string.app_name)
     Canvas(modifier = modifier.aspectRatio(wordmarkAspect(grid)).clearAndSetSemantics { contentDescription = name }) {
         val cell = wordmarkCell(grid, size)
@@ -175,10 +174,30 @@ fun Wordmark(modifier: Modifier = Modifier) {
                 ink = Brush.horizontalGradient(inkColors, startX = 0f, endX = grid.columns * cell.width),
                 shadow = shadow,
                 skin = Brand.skin(flavor),
-                cut = WordmarkCut.at(grid, shear.value),
+                cut = WordmarkCut.at(grid, shear),
             )
         }
     }
+}
+
+/**
+ * The wordmark's shear as it plays once per session: the whole word holds a beat, then the cut steps in from the right
+ * over [Motion.SHEAR_MS] to rest. The system's animator scale governs the duration, so users who turn animations off
+ * see the mark at rest at once.
+ *
+ * Playing is remembered in saved state, so a header that leaves and comes back, as History does behind a detail, is
+ * already at rest rather than replaying; leaving mid-shear counts as played.
+ */
+@Composable
+fun rememberWordmarkShear(): Float {
+    var played by rememberSaveable { mutableStateOf(false) }
+    val shear = remember { Animatable(if (played) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (played) return@LaunchedEffect
+        played = true
+        shear.animateTo(1f, tween(Motion.SHEAR_MS, delayMillis = Motion.WORDMARK_HOLD_MS, easing = Motion.Easing))
+    }
+    return shear.value
 }
 
 /**
