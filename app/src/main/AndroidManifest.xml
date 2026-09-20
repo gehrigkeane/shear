@@ -29,6 +29,10 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Sharing shortcuts hang off the launcher activity; see ShareShortcut. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
 
         <!-- The share target. Translucent and usually invisible; it relays to the native Sharesheet and finishes. -->

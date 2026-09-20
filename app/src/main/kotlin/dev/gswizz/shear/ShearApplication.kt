@@ -92,5 +92,6 @@ class ShearApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         graph = AppGraph.create(this)
+        ShareShortcut.publish(this)
     }
 }

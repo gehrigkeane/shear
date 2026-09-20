@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares the relay as a direct-share target; ShareShortcut publishes the one shortcut that fills it. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <share-target android:targetClass="dev.gswizz.shear.ShareReceiverActivity">
+        <data android:mimeType="text/plain" />
+        <category android:name="dev.gswizz.shear.SHARE" />
+    </share-target>
+</shortcuts>

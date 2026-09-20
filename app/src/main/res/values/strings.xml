@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Shear</string>
+    <string name="shortcut_long_label">Clean and share</string>
     <string name="share_text_only">Shear only handles shared text</string>
     <string name="resolving">Resolving redirects…</string>
     <string name="share_without_resolving">Share without resolving</string>

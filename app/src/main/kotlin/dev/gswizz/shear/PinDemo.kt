@@ -28,6 +28,7 @@ object PinDemo {
         val result = withContext(graph.defaultDispatcher) { graph.engine().clean(SAMPLE_TEXT) }
         val eventId = UUID.randomUUID().toString()
         graph.history.record(eventId, SAMPLE_TEXT, result, result.toShareStatus(), settings)
+        ShareShortcut.reportUsed(context)
         return Choosers.forText(context, result.outputText, subject = null, eventId = eventId, excludeSelf = false)
     }
 }

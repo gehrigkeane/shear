@@ -43,6 +43,7 @@ shear/
 | `ShearApplication`        | Owns the hand-wired `AppGraph`; loads the engine off the main thread                          |
 | `ShareReceiverActivity`   | Accept `ACTION_SEND`, clean, optionally resolve with progress, record, launch chooser, finish |
 | `ChosenComponentReceiver` | Attach the Sharesheet's chosen app to the history event                                       |
+| `ShareShortcut`           | Publish the one sharing shortcut behind the direct-share row and report each share as a use    |
 | `MainActivity`            | Navigation 3 shell over History, event detail, and Settings; prunes history on open; opens the pin-demo sharesheet |
 | `data.HistoryRepository`  | Room-backed history with retention and redaction on one ordered worker                        |
 | `data.SettingsRepository` | DataStore Preferences: redirect mode, retention, retain originals                              |
