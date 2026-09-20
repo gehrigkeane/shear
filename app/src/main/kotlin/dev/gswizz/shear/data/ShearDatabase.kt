@@ -107,6 +107,15 @@ abstract class ShareHistoryDao {
 
     @Insert abstract suspend fun insertTraces(traces: List<UrlTraceEntity>)
 
+    @Query("DELETE FROM share_event WHERE originalHash = :hash") abstract suspend fun deleteByHash(hash: String)
+
+    /** Inserts the event and its traces after removing any earlier share of the same text, so one row per text. */
+    @Transaction
+    open suspend fun replace(event: ShareEventEntity, traces: List<UrlTraceEntity>) {
+        deleteByHash(event.originalHash)
+        insert(event, traces)
+    }
+
     @Transaction
     open suspend fun insert(event: ShareEventEntity, traces: List<UrlTraceEntity>) {
         insertEvent(event)

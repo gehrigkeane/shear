@@ -29,7 +29,12 @@ class HistoryRepository(
     private val scope: CoroutineScope,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
-    /** Records a share unless retention is off, redacting originals when the user asked for that, then prunes. */
+    /**
+     * Records a share unless retention is off, redacting originals when the user asked for that, then prunes.
+     *
+     * History keeps one row per shared text: sharing the same text again replaces the earlier row, so the newest time
+     * and destination win.
+     */
     fun record(
         eventId: String,
         originalText: String,
@@ -60,7 +65,7 @@ class HistoryRepository(
                         failure = url.failure?.kind?.name,
                     )
                 }
-            dao.insert(event, traces)
+            dao.replace(event, traces)
         }
         pruneExpired(snapshot)
     }
