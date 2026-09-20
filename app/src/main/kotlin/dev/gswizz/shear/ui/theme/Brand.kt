@@ -36,6 +36,9 @@ object Motion {
     /** The wordmark's diagonal reveal. */
     const val REVEAL_MS = 500
 
+    /** The wordmark's shear, after the reveal: the cut sweeping in from the right to rest across the A. */
+    const val SHEAR_MS = 350
+
     /** The Cut share moment, first frame to handoff: hold, sweep, reflow, settle. */
     const val CUT_MS = 1_800
 

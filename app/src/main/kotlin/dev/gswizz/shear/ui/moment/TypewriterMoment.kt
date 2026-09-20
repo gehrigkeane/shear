@@ -29,11 +29,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import dev.gswizz.shear.ui.WORDMARK
+import dev.gswizz.shear.ui.WordmarkCut
 import dev.gswizz.shear.ui.WordmarkGrid
 import dev.gswizz.shear.ui.drawGrid
+import dev.gswizz.shear.ui.italic
 import dev.gswizz.shear.ui.theme.Brand
 import dev.gswizz.shear.ui.theme.Spacing
 import dev.gswizz.shear.ui.theme.shearFlavor
+import dev.gswizz.shear.ui.wordmarkAspect
+import dev.gswizz.shear.ui.wordmarkCell
 
 /**
  * Typewriter: the wordmark's columns appear left to right behind a blinking cursor block, then [caption] types in
@@ -43,6 +47,7 @@ import dev.gswizz.shear.ui.theme.shearFlavor
 fun TypewriterMoment(caption: String, onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val flavor = shearFlavor()
     val grid = remember { WordmarkGrid.parse(WORDMARK) }
+    val cut = remember(grid) { WordmarkCut.at(grid, shear = 1f) }
     val scene = remember(caption) { TypewriterScene(grid.columns, caption.length) }
     val measurer = rememberTextMeasurer()
     val captionStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
@@ -56,23 +61,32 @@ fun TypewriterMoment(caption: String, onFinished: () -> Unit, modifier: Modifier
         onFinished()
     }
     Column(modifier = modifier.fillMaxWidth().semantics { contentDescription = caption }) {
-        Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(grid.columns.toFloat() / grid.rows)) {
-            val cell = Size(size.width / grid.columns, size.height / grid.rows)
+        Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(wordmarkAspect(grid))) {
+            val cell = wordmarkCell(grid, size)
             val shown = scene.visibleColumns(elapsed)
-            drawGrid(
-                grid = grid,
-                cell = cell,
-                ink = Brush.horizontalGradient(listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor)), 0f, size.width),
-                shadow = Brand.shadow(flavor),
-            ) {
-                it.column < shown
-            }
-            if (shown < grid.columns && scene.cursorOn(elapsed)) {
-                drawRect(
-                    color = Brand.inkEnd(flavor),
-                    topLeft = Offset(scene.cursorColumn(elapsed) * cell.width, 0f),
-                    size = Size(cell.width, size.height),
-                )
+            italic(grid, cell) {
+                drawGrid(
+                    grid = grid,
+                    cell = cell,
+                    ink =
+                        Brush.horizontalGradient(
+                            listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor)),
+                            0f,
+                            grid.columns * cell.width,
+                        ),
+                    shadow = Brand.shadow(flavor),
+                    skin = Brand.skin(flavor),
+                    cut = cut,
+                ) {
+                    it.column < shown
+                }
+                if (shown < grid.columns && scene.cursorOn(elapsed)) {
+                    drawRect(
+                        color = Brand.inkEnd(flavor),
+                        topLeft = Offset(scene.cursorColumn(elapsed) * cell.width, 0f),
+                        size = Size(cell.width, grid.rows * cell.height),
+                    )
+                }
             }
         }
         Canvas(modifier = Modifier.fillMaxWidth().height(CAPTION_HEIGHT_DP.dp)) {
