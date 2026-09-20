@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Shear</string>
-    <string name="shortcut_long_label">Clean and share</string>
+    <string name="shortcut_long_label">Shear link</string>
     <string name="share_text_only">Shear only handles shared text</string>
     <string name="resolving">Resolving redirects…</string>
     <string name="share_without_resolving">Share without resolving</string>
     <string name="rules_unavailable">Shear\'s rules failed to load, so the text was shared unchanged</string>
     <string name="settings_title">Settings</string>
-    <string name="history_empty">Nothing shared through Shear yet</string>
-    <string name="history_retention_off">History is off. Shares are cleaned but not recorded.</string>
+    <string name="history_empty">Nothing sheared yet</string>
+    <string name="history_retention_off">History is off. Links are sheared but not recorded.</string>
     <string name="rules_banner">Shear\'s rules failed to load. Text is being shared unchanged.</string>
     <string name="no_links">No links</string>
-    <string name="pin_card_title">Pin me to the front of the share sheet</string>
-    <string name="pin_card_body">Hold your finger on Shear in any share sheet and tap Pin. It stays there.</string>
+    <string name="pin_card_title">Pin Shear for quick access</string>
+    <string name="pin_card_body">Hold Shear in any share sheet, then tap Pin. It stays put.</string>
     <string name="pin_show_me">Show me</string>
     <string name="dismiss">Not now</string>
     <string name="destination_unknown">Destination not reported</string>
-    <string name="status_cleaned">Cleaned</string>
-    <string name="status_unchanged">Already clean</string>
+    <string name="status_cleaned">Sheared</string>
+    <string name="status_unchanged">Already shorn</string>
     <string name="status_no_urls">No links</string>
     <string name="status_rules_unavailable">Rules unavailable</string>
     <string name="status_resolution_incomplete">Partly resolved</string>
@@ -28,7 +28,7 @@
     <string name="detail_missing">This share is no longer in history</string>
     <string name="detail_original">Original</string>
     <string name="detail_original_not_retained">Original not retained (hash %1$s)</string>
-    <string name="detail_cleaned">Shared</string>
+    <string name="detail_cleaned">Sheared</string>
     <string name="copy">Copy</string>
     <string name="detail_rules_version">Rules %1$s</string>
     <string name="detail_trace_title">Link %1$d</string>
@@ -61,11 +61,11 @@
     <string name="settings_retention_30">Keep for 30 days</string>
     <string name="settings_retention_forever">Keep forever</string>
     <string name="settings_retain_originals">Keep the original links</string>
-    <string name="settings_retain_originals_desc">Off keeps only a fingerprint of what you shared, plus the cleaned result</string>
+    <string name="settings_retain_originals_desc">Off keeps only a fingerprint of what you shared, plus the sheared result</string>
     <string name="settings_clear_history">Clear history</string>
     <string name="settings_share_sheet">Pin me</string>
-    <string name="settings_pin">Put Shear at the front of the share sheet</string>
-    <string name="settings_pin_desc">Opens a share sheet. Hold your finger on Shear, then tap Pin.</string>
+    <string name="settings_pin">Pin Shear for quick access</string>
+    <string name="settings_pin_desc">Opens a share sheet. Hold Shear, then tap Pin.</string>
     <string name="settings_about">About</string>
     <string name="settings_rules">Brave rules snapshot</string>
     <string name="settings_rules_upstream">github.com/brave/adblock-lists</string>

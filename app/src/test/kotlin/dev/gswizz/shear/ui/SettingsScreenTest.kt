@@ -104,7 +104,7 @@ class SettingsScreenTest {
         compose.onNodeWithText("Skip straight to sharing").assertExists()
         compose.onNodeWithText("Never go online").assertExists()
         compose.onNodeWithText("Keep forever").assertExists()
-        compose.onNodeWithText("Opens a share sheet. Hold your finger on Shear, then tap Pin.").assertExists()
+        compose.onNodeWithText("Opens a share sheet. Hold Shear, then tap Pin.").assertExists()
     }
 
     @Test
@@ -114,7 +114,7 @@ class SettingsScreenTest {
             SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onPinDemo = { demos++ }), onBack = {})
         }
         // The row sits below Robolectric's short viewport until scrolled into it.
-        compose.onNodeWithText("Put Shear at the front of the share sheet").performScrollTo().performClick()
+        compose.onNodeWithText("Pin Shear for quick access").performScrollTo().performClick()
         assertEquals(1, demos)
     }
 

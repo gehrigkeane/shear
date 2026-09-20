@@ -54,7 +54,7 @@ class HistoryScreenTest {
         compose.onNodeWithContentDescription("Shear").assertExists()
         compose.onNodeWithText("dest.example").assertIsDisplayed()
         compose.onNodeWithText("Messages").assertIsDisplayed()
-        compose.onNodeWithText("Cleaned").assertIsDisplayed()
+        compose.onNodeWithText("Sheared").assertIsDisplayed()
         // Only the settings action and the row itself are tappable; the status is a label, not a button.
         compose.onAllNodes(hasClickAction()).assertCountEquals(2)
         compose.onNodeWithText("dest.example").performClick()
@@ -71,7 +71,7 @@ class HistoryScreenTest {
             )
         }
         compose.onNodeWithText("Shear's rules failed to load. Text is being shared unchanged.").assertIsDisplayed()
-        compose.onNodeWithText("History is off. Shares are cleaned but not recorded.").assertIsDisplayed()
+        compose.onNodeWithText("History is off. Links are sheared but not recorded.").assertIsDisplayed()
     }
 
     @Test
@@ -87,7 +87,7 @@ class HistoryScreenTest {
                 onDismissPin = { dismissed++ },
             )
         }
-        compose.onNodeWithText("Pin me to the front of the share sheet").assertIsDisplayed()
+        compose.onNodeWithText("Pin Shear for quick access").assertIsDisplayed()
         compose.onNodeWithText("Show me").performClick()
         compose.onNodeWithText("Not now").performClick()
         assertEquals(1, demos)
@@ -97,12 +97,12 @@ class HistoryScreenTest {
     @Test
     fun `the pin card stays hidden once seen`() {
         compose.setContent { HistoryScreen(state = HistoryUiState(loading = false), onOpen = {}, onSettings = {}) }
-        compose.onNodeWithText("Pin me to the front of the share sheet").assertDoesNotExist()
+        compose.onNodeWithText("Pin Shear for quick access").assertDoesNotExist()
     }
 
     @Test
     fun `an empty history says so`() {
         compose.setContent { HistoryScreen(state = HistoryUiState(loading = false), onOpen = {}, onSettings = {}) }
-        compose.onNodeWithText("Nothing shared through Shear yet").assertIsDisplayed()
+        compose.onNodeWithText("Nothing sheared yet").assertIsDisplayed()
     }
 }

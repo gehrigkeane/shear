@@ -28,6 +28,7 @@ class ShareShortcutTest {
         assertTrue(ShareShortcut.CATEGORY in shortcut.categories.orEmpty())
         assertEquals(0, shortcut.rank)
         assertEquals("Shear", shortcut.shortLabel.toString())
+        assertEquals("Shear link", shortcut.longLabel.toString())
     }
 
     @Test
