@@ -21,16 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.gswizz.shear.ui.Wordmark
 import dev.gswizz.shear.ui.theme.Brand
 import dev.gswizz.shear.ui.theme.Motion
@@ -38,11 +35,10 @@ import dev.gswizz.shear.ui.theme.shearFlavor
 import kotlin.random.Random
 
 /**
- * The Cut: the shared URL in monospace, a blade sweeping left to right, and every removed run crumbling into pixels
- * while the survivors close ranks into the clean link.
+ * The Cut: the shared URL wrapped in monospace, a blade sweeping every line left to right, removed characters crumbling
+ * into pixels as it passes, and the survivors reflowing into the clean link once it is done.
  *
  * With nothing to cut the blade still sweeps, so the moment reads the same; with no link at all the wordmark stands in.
- * A wholesale plan crumbles the whole line and types the final URL beneath the blade's wake.
  */
 @Composable
 fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier = Modifier) {
@@ -53,63 +49,82 @@ fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier
     }
     val flavor = shearFlavor()
     val measurer = rememberTextMeasurer()
-    val baseStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
+    val style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
     val crumbColors = remember(flavor) { listOf(flavor.red, flavor.maroon, flavor.peach) }
-    BoxWithConstraints(modifier = modifier.fillMaxWidth().height(LINE_HEIGHT_DP.dp * LINES)) {
-        val maxWidth = constraints.maxWidth.toFloat()
-        val line = remember(plan, maxWidth) { fit(plan, measurer, baseStyle, maxWidth) }
-        val scene = line.scene
+    val density = LocalDensity.current.density
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val grid = remember(plan, constraints.maxWidth) { Grid(measurer, style, constraints.maxWidth.toFloat()) }
+        val scene =
+            remember(plan, grid) {
+                CutScene.of(plan, grid.columns, Motion.CUT_HOLD_MS, Motion.CUT_SWEEP_MS, Motion.CUT_REFLOW_MS)
+            }
+        val finalLines = remember(plan, grid) { plan.final.chunked(grid.columns) }
+        val shownLines = scene.lines.coerceAtMost(MAX_LINES).coerceAtLeast(finalLines.size.coerceAtMost(MAX_LINES))
+        val canvasHeight = grid.lineHeight * shownLines + grid.lineHeight * CRUMB_ROOM_LINES
         var elapsed by remember { mutableFloatStateOf(0f) }
         val crumbs = remember(plan) { PixelField(CRUMB_CAPACITY, Random(plan.original.hashCode())) }
-        val density = LocalDensity.current
-        LaunchedEffect(line) {
+        LaunchedEffect(scene) {
             val start = withFrameNanos { it }
             var last = start
-            val cutSoFar = FloatArray(line.layouts.size)
+            var cutCount = 0
             while (true) {
                 val now = withFrameNanos { it }
                 val dt = (now - last) / NANOS_PER_SECOND
                 last = now
                 elapsed = (now - start) / NANOS_PER_MILLI
-                for (i in line.layouts.indices) {
-                    val cut = scene.cutFraction(i, elapsed)
-                    if (cut > cutSoFar[i]) {
-                        val left = scene.x(i, elapsed) + cutSoFar[i] * scene.widths[i]
-                        val width = (cut - cutSoFar[i]) * scene.widths[i]
-                        spawnCrumbs(crumbs, left, width, line.lineHeight, density.density)
-                        cutSoFar[i] = cut
+                val passed = scene.bladeIndex(elapsed).toInt().coerceAtMost(scene.chars.size)
+                for (i in cutCount until passed) {
+                    if (scene.chars[i].removed) {
+                        val x = scene.columnOf(i) * grid.advance
+                        val y = scene.lineOf(i) * grid.lineHeight
+                        spawnCrumbs(crumbs, x, y, grid.advance, grid.lineHeight, density, i)
                     }
                 }
-                crumbs.step(dt, gravity = GRAVITY_DP * density.density)
+                cutCount = passed
+                crumbs.step(dt, gravity = GRAVITY_DP * density)
                 if (elapsed >= Motion.CUT_MS) break
             }
             onFinished()
         }
-        Canvas(modifier = Modifier.fillMaxWidth().height(LINE_HEIGHT_DP.dp * LINES)) {
+        Canvas(modifier = Modifier.fillMaxWidth().height((canvasHeight / density).dp)) {
             val t = elapsed
-            val top = line.lineHeight / 2
-            for ((i, layout) in line.layouts.withIndex()) {
-                val x = scene.x(i, t)
-                val cut = scene.cutFraction(i, t)
-                if (cut >= 1f) continue
-                val color = if (plan.segments[i].removed) flavor.red else flavor.text
-                clipRect(
-                    left = x + cut * scene.widths[i],
-                    top = 0f,
-                    right = x + scene.widths[i],
-                    bottom = size.height,
-                ) {
-                    drawText(layout, color = color, topLeft = Offset(x, top))
+            val reflow = scene.reflow(t)
+            val originalAlpha = 1f - reflow
+            if (originalAlpha > 0f) {
+                for (line in 0 until scene.lines.coerceAtMost(MAX_LINES)) {
+                    val top = line * grid.lineHeight
+                    val from = line * grid.columns
+                    val to = (from + grid.columns).coerceAtMost(scene.chars.size)
+                    val kept =
+                        CharArray(to - from) { j ->
+                            val i = from + j
+                            if (scene.chars[i].removed) ' ' else scene.chars[i].char
+                        }
+                    val doomed =
+                        CharArray(to - from) { j ->
+                            val i = from + j
+                            if (scene.chars[i].removed && !scene.isCut(i, t)) scene.chars[i].char else ' '
+                        }
+                    drawText(
+                        measurer.measure(String(kept), style),
+                        flavor.text.copy(alpha = originalAlpha),
+                        Offset(0f, top),
+                    )
+                    drawText(
+                        measurer.measure(String(doomed), style),
+                        flavor.red.copy(alpha = originalAlpha),
+                        Offset(0f, top),
+                    )
                 }
             }
-            if (plan.wholesale && t > scene.sweepEndMs) {
-                val typed =
-                    ((t - scene.sweepEndMs) / (Motion.CUT_MS - Motion.CUT_SETTLE_MS - scene.sweepEndMs)).coerceIn(
-                        0f,
-                        1f,
+            if (reflow > 0f) {
+                for ((line, text) in finalLines.take(MAX_LINES).withIndex()) {
+                    drawText(
+                        measurer.measure(text, style),
+                        flavor.text.copy(alpha = reflow),
+                        Offset(0f, line * grid.lineHeight),
                     )
-                val shown = plan.final.take((typed * plan.final.length).toInt())
-                drawText(measurer.measure(shown, line.style), color = flavor.text, topLeft = Offset(0f, top))
+                }
             }
             for (i in 0 until crumbs.count) {
                 drawRect(
@@ -119,11 +134,15 @@ fun CutMoment(summary: MomentSummary, onFinished: () -> Unit, modifier: Modifier
                 )
             }
             if (t < scene.sweepEndMs) {
-                val bx = scene.bladeX(t)
+                val bladeWidth = BLADE_DP.dp.toPx()
                 drawRect(
                     brush = Brush.verticalGradient(listOf(Brand.inkStart(flavor), Brand.inkEnd(flavor))),
-                    topLeft = Offset(bx - BLADE_DP.dp.toPx() / 2, 0f),
-                    size = Size(BLADE_DP.dp.toPx(), size.height),
+                    topLeft =
+                        Offset(
+                            scene.bladeColumn(t) * grid.advance - bladeWidth / 2,
+                            scene.bladeLine(t) * grid.lineHeight,
+                        ),
+                    size = Size(bladeWidth, grid.lineHeight),
                 )
             }
         }
@@ -142,72 +161,26 @@ private fun WordmarkMoment(onFinished: () -> Unit, modifier: Modifier = Modifier
     Wordmark(modifier = modifier.fillMaxWidth())
 }
 
-/** The plan measured at a size that fits [maxWidth], shortening the first kept run from its middle if it must. */
-private class FittedLine(val style: TextStyle, val layouts: List<TextLayoutResult>, val scene: CutScene) {
-    val lineHeight: Float = layouts.maxOfOrNull { it.size.height.toFloat() } ?: 0f
-}
+/** The monospace cell the URL is laid out in: one glyph's advance, the line height, and how many columns fit. */
+private class Grid(measurer: TextMeasurer, style: TextStyle, maxWidth: Float) {
+    val advance: Float
+    val lineHeight: Float
+    val columns: Int
 
-private fun fit(plan: CutPlan, measurer: TextMeasurer, base: TextStyle, maxWidth: Float): FittedLine {
-    var segments = plan.segments
-    var style = base
-    var layouts = segments.map { measurer.measure(it.text, style) }
-    val natural = layouts.sumOf { it.size.width }.toFloat()
-    if (natural > maxWidth) {
-        val scaled = (base.fontSize.value * maxWidth / natural).coerceAtLeast(MIN_SP)
-        style = base.copy(fontSize = scaled.sp)
-        layouts = segments.map { measurer.measure(it.text, style) }
+    init {
+        val glyph = measurer.measure("M", style).size
+        advance = glyph.width.toFloat()
+        lineHeight = glyph.height.toFloat()
+        columns = (maxWidth / advance).toInt().coerceAtLeast(MIN_COLUMNS)
     }
-    val firstKept = segments.indexOfFirst { !it.removed }
-    while (firstKept >= 0 && layouts.sumOf { it.size.width } > maxWidth) {
-        val text = segments[firstKept].text
-        val shorter = shortenPath(text, SHORTEN_STEP)
-        if (shorter == text) break
-        segments = segments.toMutableList().also { it[firstKept] = it[firstKept].copy(text = shorter) }
-        layouts = segments.map { measurer.measure(it.text, style) }
-    }
-    val widths = layouts.map { it.size.width.toFloat() }
-    return FittedLine(
-        style,
-        layouts,
-        CutScene(
-            segments,
-            widths,
-            sweepMs = Motion.CUT_SWEEP_MS,
-            slideMs = Motion.CUT_SLIDE_MS,
-            holdMs = Motion.CUT_HOLD_MS,
-        ),
-    )
 }
 
-/**
- * Drops [drop] characters from the middle of [text]'s path, marking the gap with an ellipsis, so the host stays whole
- * and the last character survives. Without a path the whole text gives way from its middle. Already applied? Same text
- * comes back, so callers can stop.
- */
-internal fun shortenPath(text: String, drop: Int): String {
-    if (drop <= 0) return text
-    val authorityEnd = text.indexOf("://").let { if (it < 0) -1 else text.indexOf('/', it + 3) }
-    val regionStart = if (authorityEnd < 0) 0 else authorityEnd + 1
-    val region =
-        text.substring(regionStart).removePrefix(ELLIPSIS).let { r ->
-            // Re-shorten an already shortened region by treating the ellipsis as the cut point.
-            val cut = r.indexOf(ELLIPSIS)
-            if (cut < 0) r else r.removeRange(cut, cut + 1)
-        }
-    val keep = (region.length - drop).coerceAtLeast(1)
-    if (keep >= region.length && text.substring(regionStart).indexOf(ELLIPSIS) < 0) return text
-    val tail = (keep + 1) / 2
-    val head = keep - tail
-    return text.substring(0, regionStart) + region.take(head) + ELLIPSIS + region.takeLast(tail)
-}
-
-private fun spawnCrumbs(field: PixelField, left: Float, width: Float, lineHeight: Float, density: Float) {
-    val count = (width / (CRUMB_SPACING_DP * density)).toInt().coerceAtLeast(1)
-    val random = Random((left * 31 + width * 17).toInt())
-    repeat(count) {
+private fun spawnCrumbs(field: PixelField, x: Float, y: Float, w: Float, h: Float, density: Float, seed: Int) {
+    val random = Random(seed)
+    repeat(CRUMBS_PER_CHAR) {
         field.spawn(
-            x = left + random.nextFloat() * width,
-            y = lineHeight * (HALF + random.nextFloat()),
+            x = x + random.nextFloat() * w,
+            y = y + h * (HALF + random.nextFloat() * HALF),
             vx = (random.nextFloat() - HALF) * CRUMB_SPEED_DP * density,
             vy = -random.nextFloat() * CRUMB_SPEED_DP * density,
             size = (CRUMB_MIN_DP + random.nextFloat() * (CRUMB_MAX_DP - CRUMB_MIN_DP)) * density,
@@ -219,14 +192,12 @@ private fun spawnCrumbs(field: PixelField, left: Float, width: Float, lineHeight
 
 private const val NANOS_PER_SECOND = 1_000_000_000f
 private const val NANOS_PER_MILLI = 1_000_000f
-private const val LINE_HEIGHT_DP = 20
-private const val LINES = 3
+private const val MAX_LINES = 8
+private const val MIN_COLUMNS = 8
+private const val CRUMB_ROOM_LINES = 1
 private const val BLADE_DP = 2
-private const val MIN_SP = 10f
-private const val SHORTEN_STEP = 2
-private const val ELLIPSIS = "…"
-private const val CRUMB_CAPACITY = 240
-private const val CRUMB_SPACING_DP = 3f
+private const val CRUMB_CAPACITY = 400
+private const val CRUMBS_PER_CHAR = 3
 private const val CRUMB_SPEED_DP = 60f
 private const val CRUMB_MIN_DP = 2f
 private const val CRUMB_MAX_DP = 4f

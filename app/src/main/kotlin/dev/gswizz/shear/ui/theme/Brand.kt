@@ -30,7 +30,7 @@ object Motion {
     /** The wordmark's diagonal reveal. */
     const val REVEAL_MS = 500
 
-    /** The Cut share moment, first frame to handoff: hold, sweep, slide, settle. */
+    /** The Cut share moment, first frame to handoff: hold, sweep, reflow, settle. */
     const val CUT_MS = 1_800
 
     /** The Cut: how long the URL sits still so the eye can land before the blade moves. */
@@ -39,8 +39,8 @@ object Motion {
     /** The Cut: the blade's crossing. */
     const val CUT_SWEEP_MS = 800
 
-    /** The Cut: survivors closing ranks while crumbs fall. */
-    const val CUT_SLIDE_MS = 350
+    /** The Cut: survivors reflowing into the clean URL while the last crumbs fall. */
+    const val CUT_REFLOW_MS = 350
 
     /** The Cut: the clean URL at rest before the sharesheet. */
     const val CUT_SETTLE_MS = 400
