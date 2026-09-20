@@ -9,7 +9,7 @@ import android.animation.ValueAnimator
 import android.app.Application
 import android.content.Intent
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -65,7 +65,7 @@ class ShareMomentActivityTest {
         compose.mainClock.autoAdvance = false
         ActivityScenario.launch<ShareReceiverActivity>(share("see $dirty")).use { scenario ->
             compose.waitForIdle()
-            compose.onNodeWithText("Sheared!").assertExists()
+            compose.onNodeWithContentDescription("Sheared!").assertExists()
             assertNull(scenario.chooser())
             compose.mainClock.advanceTimeBy(Motion.CUT_MS + 200L)
             compose.waitForIdle()
@@ -119,12 +119,12 @@ class ShareMomentActivityTest {
     }
 
     @Test
-    fun `a share with no links still gets its moment and caption`() {
+    fun `a share with no links still gets its moment, described as such`() {
         TestGraph.install(FakeEngine.noUrls())
         compose.mainClock.autoAdvance = false
         ActivityScenario.launch<ShareReceiverActivity>(share("no links")).use { scenario ->
             compose.waitForIdle()
-            compose.onNodeWithText("No links").assertExists()
+            compose.onNodeWithContentDescription("No links").assertExists()
             assertNull(scenario.chooser())
             scenario.onActivity { assertFalse(it.isFinishing) }
         }

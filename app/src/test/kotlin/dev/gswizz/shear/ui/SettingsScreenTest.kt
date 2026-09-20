@@ -7,6 +7,7 @@ package dev.gswizz.shear.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -79,7 +80,7 @@ class SettingsScreenTest {
         compose.setContent {
             SettingsScreen(state = SettingsUiState(preview = MomentStyle.CUT), callbacks = noop(), onBack = {})
         }
-        compose.onNodeWithText("Sheared!").assertExists()
+        compose.onNodeWithContentDescription("Sheared!").assertExists()
     }
 
     @Test
