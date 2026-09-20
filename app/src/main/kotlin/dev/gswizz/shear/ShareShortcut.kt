@@ -7,13 +7,22 @@ package dev.gswizz.shear
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Canvas
-import android.graphics.drawable.AdaptiveIconDrawable
-import androidx.core.content.ContextCompat
+import android.graphics.Bitmap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
+import dev.gswizz.shear.ui.drawSheep
+import dev.gswizz.shear.ui.theme.Catppuccin
 
 /**
  * Shear's one sharing shortcut, the entry the sharesheet's direct-share row can show above the app grid.
@@ -21,6 +30,9 @@ import androidx.core.graphics.drawable.IconCompat
  * The row is ordered by the system's prediction service from how often each shortcut is used, so every share reports a
  * use; long-lived and rank zero are the only static hints the platform accepts. Placement is the system's call and is
  * not guaranteed.
+ *
+ * The sharesheet badges every direct-share entry with its app's icon, so the shortcut wears a different face: the sheep
+ * before its trim, every curl still on, with the shorn launcher sheep as the badge showing what a share does.
  */
 object ShareShortcut {
     const val ID = "shear"
@@ -30,6 +42,9 @@ object ShareShortcut {
 
     /** The full adaptive-icon canvas; the system keeps the central 72dp after masking. */
     private const val ADAPTIVE_DP = 108
+
+    /** The launcher icon's palette; icons cannot follow the theme, so like the launcher this one is always Mocha. */
+    private val flavor = Catppuccin.Mocha
 
     /** Installs or refreshes the shortcut. Idempotent; call at startup. */
     fun publish(context: Context) {
@@ -41,7 +56,7 @@ object ShareShortcut {
         ShortcutInfoCompat.Builder(context, ID)
             .setShortLabel(context.getString(R.string.app_name))
             .setLongLabel(context.getString(R.string.shortcut_long_label))
-            .setIcon(launcherIcon(context))
+            .setIcon(IconCompat.createWithAdaptiveBitmap(icon(context)))
             .setIntent(Intent(Intent.ACTION_MAIN).setClass(context, MainActivity::class.java))
             .setCategories(setOf(CATEGORY))
             .setLongLived(true)
@@ -49,21 +64,21 @@ object ShareShortcut {
             .build()
 
     /**
-     * The launcher icon's layers flattened into one full-bleed bitmap that the system masks like an app icon.
+     * The unshorn sheep on the launcher background, full bleed, for the system to mask like an app icon.
      *
-     * Handing the adaptive drawable over as a resource shows it unmasked, a raw square; drawing the layers ourselves
-     * and declaring the result adaptive lets the sharesheet apply the same shape it uses everywhere else.
+     * Handing a drawable resource over would show it unmasked, a raw square; a bitmap declared adaptive lets the
+     * sharesheet apply the same shape it uses everywhere else.
      */
-    private fun launcherIcon(context: Context): IconCompat {
-        val drawable = ContextCompat.getDrawable(context, R.mipmap.ic_launcher) as AdaptiveIconDrawable
-        val size = (ADAPTIVE_DP * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
-        val bitmap = createBitmap(size, size)
-        val canvas = Canvas(bitmap)
-        for (layer in listOfNotNull(drawable.background, drawable.foreground)) {
-            layer.setBounds(0, 0, size, size)
-            layer.draw(canvas)
+    fun icon(context: Context): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val side = (ADAPTIVE_DP * density).toInt().coerceAtLeast(1)
+        val image = ImageBitmap(side, side)
+        val bounds = Rect(Offset.Zero, Size(side.toFloat(), side.toFloat()))
+        CanvasDrawScope().draw(Density(density), LayoutDirection.Ltr, Canvas(image), bounds.size) {
+            drawRect(color = Color(context.getColor(R.color.ic_launcher_background)))
+            drawSheep(bounds = bounds, flavor = flavor, shear = 0f)
         }
-        return IconCompat.createWithAdaptiveBitmap(bitmap)
+        return image.asAndroidBitmap()
     }
 
     /** Tells the system the shortcut was used, the signal that lifts it in the direct-share row. */
