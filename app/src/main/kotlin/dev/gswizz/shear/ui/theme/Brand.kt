@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Brand tokens that sit outside Material roles: the ink gradient the wordmark and launcher icon share, and the shadow
- * behind box-drawing glyphs. Expressed over a [Flavor] so they follow light and dark.
+ * Brand tokens that sit outside Material roles: the ink gradient the wordmark and the sheep's fleece share, the shadow
+ * behind box-drawing glyphs, and the sheep's skin and face. Expressed over a [Flavor] so they follow light and dark.
  */
 object Brand {
     /** Where the ink gradient starts, on the left. */
@@ -23,6 +23,12 @@ object Brand {
 
     /** The box-drawing shadow beside ink cells. */
     fun shadow(flavor: Flavor): Color = flavor.overlay0
+
+    /** The sheep where the fleece has come off. */
+    fun skin(flavor: Flavor): Color = flavor.lavender
+
+    /** The sheep's face: the deepest neutral the flavor has, so it reads against the fleece. */
+    fun face(flavor: Flavor): Color = if (flavor.dark) flavor.crust else flavor.text
 }
 
 /** Durations and easing for everything Shear animates. Milliseconds. */
