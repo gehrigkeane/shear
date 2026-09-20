@@ -12,25 +12,33 @@ import android.content.Intent
 import dev.gswizz.shear.core.TextResult
 import dev.gswizz.shear.data.ShareStatus
 
-/** Builds the sharesheet intents Shear launches, all carrying the callback that attaches the chosen app to history. */
+/** Builds the sharesheet intents Shear launches. */
 object Choosers {
     /**
-     * A chooser over [text] as `text/plain`, reporting the chosen component for [eventId].
+     * A chooser over [text] as `text/plain`.
      *
-     * The relay passes [excludeSelf] so a user cannot loop Shear into Shear; the pin demo keeps Shear listed so it can
-     * be long-pressed and pinned.
+     * With an [eventId] the chooser reports the chosen component so it can be attached to that history event; without
+     * one nothing is recorded, which is what the pin demo wants. The relay passes [excludeSelf] so a user cannot loop
+     * Shear into Shear; the pin demo keeps Shear listed so it can be long-pressed and pinned.
      */
-    fun forText(context: Context, text: String, subject: CharSequence?, eventId: String, excludeSelf: Boolean): Intent {
+    fun forText(
+        context: Context,
+        text: String,
+        subject: CharSequence?,
+        eventId: String?,
+        excludeSelf: Boolean,
+    ): Intent {
         val relay = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
         if (subject != null) relay.putExtra(Intent.EXTRA_SUBJECT, subject)
-        val callback =
+        val callback = eventId?.let {
             PendingIntent.getBroadcast(
                 context,
-                eventId.hashCode(),
-                ChosenComponentReceiver.callback(context, eventId),
+                it.hashCode(),
+                ChosenComponentReceiver.callback(context, it),
                 PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
-        val chooser = Intent.createChooser(relay, null, callback.intentSender)
+        }
+        val chooser = Intent.createChooser(relay, null, callback?.intentSender)
         if (excludeSelf) {
             val self = ComponentName(context, ShareReceiverActivity::class.java)
             chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(self))
