@@ -294,9 +294,13 @@ private fun EventDetailBody(event: EventDetail, modifier: Modifier = Modifier) {
                 )
             }
         }
-        item {
-            Section(title = sharedTitle, onCopy = { copy(sharedTitle, event.cleanedText) }) {
-                Text(text = event.cleanedText, style = MaterialTheme.typography.bodyMedium)
+        // A share that left the text alone has nothing to show twice; the original stands for both. When the
+        // original was not kept, the sheared text is the only text there is, so it stays.
+        if (event.cleanedText != event.originalText) {
+            item {
+                Section(title = sharedTitle, onCopy = { copy(sharedTitle, event.cleanedText) }) {
+                    Text(text = event.cleanedText, style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
         items(event.traces.withIndex().toList(), key = { it.index }) { (index, trace) ->
