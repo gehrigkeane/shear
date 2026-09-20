@@ -322,7 +322,7 @@ private fun momentLabels(style: MomentStyle): Pair<Int, Int> =
     when (style) {
         MomentStyle.OFF -> R.string.moment_off to R.string.moment_off_desc
         MomentStyle.CUT -> R.string.moment_cut to R.string.moment_cut_desc
-        MomentStyle.CONFETTI -> R.string.moment_confetti to R.string.moment_confetti_desc
+        MomentStyle.SHEEP -> R.string.moment_sheep to R.string.moment_sheep_desc
         MomentStyle.TYPEWRITER -> R.string.moment_typewriter to R.string.moment_typewriter_desc
     }
 

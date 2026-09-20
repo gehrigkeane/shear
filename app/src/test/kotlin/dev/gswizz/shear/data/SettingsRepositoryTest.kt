@@ -56,10 +56,18 @@ class SettingsRepositoryTest {
                 assertEquals(false, awaitItem().retainOriginals)
                 repository.setPinPromptSeen()
                 assertEquals(true, awaitItem().pinPromptSeen)
-                repository.setMoment(MomentStyle.CONFETTI)
-                assertEquals(MomentStyle.CONFETTI, awaitItem().moment)
+                repository.setMoment(MomentStyle.SHEEP)
+                assertEquals(MomentStyle.SHEEP, awaitItem().moment)
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+
+    @Test
+    fun `a moment stored under its old name comes back as The Sheep`() =
+        runTest(UnconfinedTestDispatcher()) {
+            val dataStore = store(this)
+            dataStore.edit { it[stringPreferencesKey("share_moment")] = "CONFETTI" }
+            assertEquals(MomentStyle.SHEEP, SettingsRepository(dataStore).settings.first().moment)
         }
 
     @Test

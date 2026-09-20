@@ -14,7 +14,7 @@ class MotionTest {
 
     @Test
     fun `every share moment fits the observable window`() {
-        for (budget in listOf(Motion.CUT_MS, Motion.CONFETTI_MS, Motion.TYPEWRITER_MS)) {
+        for (budget in listOf(Motion.CUT_MS, Motion.SHEEP_MS, Motion.TYPEWRITER_MS)) {
             assertTrue("$budget ms", budget in observable)
         }
     }

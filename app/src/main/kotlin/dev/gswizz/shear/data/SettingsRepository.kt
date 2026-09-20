@@ -28,9 +28,9 @@ enum class MomentStyle {
     OFF,
     /** The tracking tail is sheared off the URL. */
     CUT,
-    /** Pixel confetti in the flavor's accents. */
-    CONFETTI,
-    /** The wordmark types itself in. */
+    /** The sheep is shorn along the icon's cut. */
+    SHEEP,
+    /** A cursor hollows the wordmark out. */
     TYPEWRITER,
 }
 
@@ -79,7 +79,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
                 pinPromptSeen = prefs[PIN_PROMPT_SEEN] ?: false,
                 moment =
                     prefs[MOMENT]?.let { name -> MomentStyle.entries.firstOrNull { it.name == name } }
-                        ?: MomentStyle.CUT,
+                        ?: if (prefs[MOMENT] == LEGACY_CONFETTI) MomentStyle.SHEEP else MomentStyle.CUT,
             )
         }
 
@@ -109,5 +109,8 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         val RETAIN_ORIGINALS = booleanPreferencesKey("retain_originals")
         val PIN_PROMPT_SEEN = booleanPreferencesKey("pin_prompt_seen")
         val MOMENT = stringPreferencesKey("share_moment")
+
+        /** The name The Sheep was stored under before it was The Sheep. */
+        const val LEGACY_CONFETTI = "CONFETTI"
     }
 }

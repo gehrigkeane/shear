@@ -50,8 +50,8 @@ fun MomentHost(style: MomentStyle, summary: MomentSummary, onFinished: () -> Uni
                 val caption = caption(summary)
                 when (style) {
                     MomentStyle.CUT -> CutMoment(summary = summary, onFinished = onFinished)
-                    MomentStyle.CONFETTI -> ConfettiMoment(summary = summary, onFinished = onFinished)
-                    // Types the caption itself, so the plain one below would double it.
+                    MomentStyle.SHEEP -> SheepMoment(onFinished = onFinished)
+                    // Carries the caption as its description; nothing is drawn beneath it.
                     MomentStyle.TYPEWRITER -> TypewriterMoment(caption = caption, onFinished = onFinished)
                     MomentStyle.OFF -> onFinished()
                 }
