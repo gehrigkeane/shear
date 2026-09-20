@@ -87,9 +87,9 @@ class HistoryScreenTest {
                 onDismissPin = { dismissed++ },
             )
         }
-        compose.onNodeWithText("Pin Shear to the top of the share sheet").assertIsDisplayed()
+        compose.onNodeWithText("Pin me to the front of the share sheet").assertIsDisplayed()
         compose.onNodeWithText("Show me").performClick()
-        compose.onNodeWithText("Dismiss").performClick()
+        compose.onNodeWithText("Not now").performClick()
         assertEquals(1, demos)
         assertEquals(1, dismissed)
     }
@@ -97,7 +97,7 @@ class HistoryScreenTest {
     @Test
     fun `the pin card stays hidden once seen`() {
         compose.setContent { HistoryScreen(state = HistoryUiState(loading = false), onOpen = {}, onSettings = {}) }
-        compose.onNodeWithText("Pin Shear to the top of the share sheet").assertDoesNotExist()
+        compose.onNodeWithText("Pin me to the front of the share sheet").assertDoesNotExist()
     }
 
     @Test

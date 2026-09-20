@@ -28,7 +28,7 @@ class SettingsScreenTest {
     private fun noop() = SettingsCallbacks({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 
     private val disclosure =
-        "Resolving redirects contacts the redirect service, which learns that you visited the link. Shear sends no cookies, credentials, or referrer."
+        "Following a link online lets that link's owner see that you opened it. Shear never sends cookies, logins, or where you came from."
 
     @Test
     fun `the network disclosure is absent while resolution is off`() {
@@ -51,7 +51,8 @@ class SettingsScreenTest {
                 onBack = {},
             )
         }
-        compose.onNodeWithText(disclosure).assertIsDisplayed()
+        // Follow redirects is the last section, below Robolectric's short viewport until scrolled.
+        compose.onNodeWithText(disclosure).performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -84,13 +85,36 @@ class SettingsScreenTest {
     }
 
     @Test
+    fun `sections run pin me, animation, history, follow redirects, about`() {
+        compose.setContent { SettingsScreen(state = SettingsUiState(), callbacks = noop(), onBack = {}) }
+        // Nodes below Robolectric's viewport report empty bounds, so composition order stands in for position: the
+        // column composes top to bottom and semantics ids are handed out in that order.
+        val ids =
+            listOf("Pin me", "Animation", "History", "Follow redirects", "About").map {
+                compose.onNodeWithText(it).fetchSemanticsNode().id
+            }
+        assertEquals(ids.sorted(), ids)
+        assertEquals(5, ids.distinct().size)
+    }
+
+    @Test
+    fun `descriptions speak plainly`() {
+        compose.setContent { SettingsScreen(state = SettingsUiState(), callbacks = noop(), onBack = {}) }
+        compose.onNodeWithText("Watch the overgrown fluff get sheared!").assertExists()
+        compose.onNodeWithText("Skip straight to sharing").assertExists()
+        compose.onNodeWithText("Never go online").assertExists()
+        compose.onNodeWithText("Keep forever").assertExists()
+        compose.onNodeWithText("Opens a share sheet. Hold your finger on Shear, then tap Pin.").assertExists()
+    }
+
+    @Test
     fun `the share sheet row launches the pin demo`() {
         var demos = 0
         compose.setContent {
             SettingsScreen(state = SettingsUiState(), callbacks = noop().copy(onPinDemo = { demos++ }), onBack = {})
         }
         // The row sits below Robolectric's short viewport until scrolled into it.
-        compose.onNodeWithText("Pin Shear in the share sheet").performScrollTo().performClick()
+        compose.onNodeWithText("Put Shear at the front of the share sheet").performScrollTo().performClick()
         assertEquals(1, demos)
     }
 
