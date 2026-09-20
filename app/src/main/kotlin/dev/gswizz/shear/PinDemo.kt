@@ -7,27 +7,24 @@ package dev.gswizz.shear
 
 import android.content.Context
 import android.content.Intent
-import kotlinx.coroutines.withContext
 
 /**
  * A sharesheet opened from Shear itself so the user can long-press Shear in it and choose Pin.
  *
  * Android offers no API to promote a share target; pinning is the user's gesture and the system remembers it for every
- * app's sharesheet. The sample link is sheared so the sheet shows a real result, but the demo is not a share: nothing
- * is recorded in history and no destination is asked for. Unlike the relay chooser, this one deliberately keeps Shear
- * listed.
+ * app's sharesheet. The sample link goes out dirty: tapping Shear in this sheet is what cleans it, moment and all, so
+ * the demo doubles as a first share. Nothing is recorded and no destination is asked for. Unlike the relay chooser,
+ * this one deliberately keeps Shear listed.
  */
 object PinDemo {
     /**
-     * A link with two trackers the bundled rules remove, a campaign tag and a Facebook click id, around one parameter
-     * that stays, so the sheet shows a real clean rather than a wipe.
+     * A link carrying two trackers the bundled rules remove, a campaign tag and a Facebook click id, and nothing else.
      */
-    const val SAMPLE_TEXT = "https://example.com/read?id=42&utm_source=newsletter&fbclid=IwAR0pin"
+    const val SAMPLE_TEXT = "https://example.com/read?utm_source=newsletter&fbclid=IwAR0pin"
 
-    /** Shears the sample and returns the chooser to start. */
-    suspend fun share(context: Context, graph: AppGraph): Intent {
-        val result = withContext(graph.defaultDispatcher) { graph.engine().clean(SAMPLE_TEXT) }
+    /** The chooser to start. */
+    fun share(context: Context): Intent {
         ShareShortcut.reportUsed(context)
-        return Choosers.forText(context, result.outputText, subject = null, eventId = null, excludeSelf = false)
+        return Choosers.forText(context, SAMPLE_TEXT, subject = null, eventId = null, excludeSelf = false)
     }
 }

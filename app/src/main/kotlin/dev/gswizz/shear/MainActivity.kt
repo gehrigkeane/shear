@@ -20,7 +20,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
                     graph = graph,
                     appVersion = appVersion,
                     onOpenUpstream = { startActivity(Intent(Intent.ACTION_VIEW, SettingsUiState.UPSTREAM.toUri())) },
-                    onPinDemo = { lifecycleScope.launch { startActivity(PinDemo.share(this@MainActivity, graph)) } },
+                    onPinDemo = { startActivity(PinDemo.share(this)) },
                 )
             }
         }
