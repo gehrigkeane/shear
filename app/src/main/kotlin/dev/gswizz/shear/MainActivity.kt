@@ -10,9 +10,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
@@ -22,13 +26,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import dev.gswizz.shear.ui.EventDetailRoute
 import dev.gswizz.shear.ui.HistoryRoute
 import dev.gswizz.shear.ui.SettingsRoute
 import dev.gswizz.shear.ui.SettingsUiState
-import dev.gswizz.shear.ui.SharedScopes
 import dev.gswizz.shear.ui.theme.ShearTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -64,8 +66,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** The navigation shell. A shared-transition layout wraps the display so a history row can glide into its details. */
-@OptIn(ExperimentalSharedTransitionApi::class)
+/**
+ * The navigation shell. Screens slide in from the right and back out the same way; predictive back follows the finger.
+ */
 @Composable
 private fun ShearApp(
     graph: AppGraph,
@@ -75,47 +78,54 @@ private fun ShearApp(
     modifier: Modifier = Modifier,
 ) {
     val backStack = rememberNavBackStack(HistoryKey)
-    SharedTransitionLayout(modifier = modifier) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryDecorators =
-                listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
-            entryProvider =
-                entryProvider {
-                    entry<HistoryKey> {
-                        HistoryRoute(
-                            graph = graph,
-                            onOpen = { backStack.add(EventDetailKey(it)) },
-                            onSettings = { backStack.add(SettingsKey) },
-                            onPinDemo = onPinDemo,
-                            shared = sharedScopes(),
-                        )
-                    }
-                    entry<EventDetailKey> { key ->
-                        EventDetailRoute(
-                            graph = graph,
-                            eventId = key.eventId,
-                            onBack = { backStack.removeLastOrNull() },
-                            shared = sharedScopes(),
-                        )
-                    }
-                    entry<SettingsKey> {
-                        SettingsRoute(
-                            graph = graph,
-                            appVersion = appVersion,
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenUpstream = onOpenUpstream,
-                            onPinDemo = onPinDemo,
-                        )
-                    }
-                },
-        )
-    }
+    NavDisplay(
+        backStack = backStack,
+        modifier = modifier,
+        onBack = { backStack.removeLastOrNull() },
+        transitionSpec = { slide(forward = true) },
+        popTransitionSpec = { slide(forward = false) },
+        predictivePopTransitionSpec = { slide(forward = false) },
+        entryDecorators =
+            listOf(rememberSaveableStateHolderNavEntryDecorator(), rememberViewModelStoreNavEntryDecorator()),
+        entryProvider =
+            entryProvider {
+                entry<HistoryKey> {
+                    HistoryRoute(
+                        graph = graph,
+                        onOpen = { backStack.add(EventDetailKey(it)) },
+                        onSettings = { backStack.add(SettingsKey) },
+                        onPinDemo = onPinDemo,
+                    )
+                }
+                entry<EventDetailKey> { key ->
+                    EventDetailRoute(
+                        graph = graph,
+                        eventId = key.eventId,
+                        onBack = { backStack.removeLastOrNull() },
+                    )
+                }
+                entry<SettingsKey> {
+                    SettingsRoute(
+                        graph = graph,
+                        appVersion = appVersion,
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenUpstream = onOpenUpstream,
+                        onPinDemo = onPinDemo,
+                    )
+                }
+            },
+    )
 }
 
-/** The scopes a screen's shared elements need: this layout and the current entry's animated visibility. */
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun SharedTransitionScope.sharedScopes(): SharedScopes =
-    SharedScopes(transition = this, visibility = LocalNavAnimatedContentScope.current)
+/**
+ * A horizontal slide: forward brings the new screen in from the right while the old one gives way to the left, back
+ * reverses it. Short, and identical whether back came from a button or a swipe.
+ */
+private fun slide(forward: Boolean): ContentTransform {
+    val direction = if (forward) 1 else -1
+    val spec = tween<Float>(SLIDE_MS)
+    return (slideInHorizontally(tween(SLIDE_MS)) { direction * it } + fadeIn(spec)) togetherWith
+        (slideOutHorizontally(tween(SLIDE_MS)) { -direction * it / 3 } + fadeOut(spec))
+}
+
+private const val SLIDE_MS = 250
